@@ -43,7 +43,7 @@ public class LightService {
 	}
 
 	public List<LightEntry> getNearest(GeoPosition position, Double radius) {
-		if (searchRadiusMetersMax > radius) {
+		if (radius > searchRadiusMetersMax) {
 			throw new ValidationException("Search radius exceeds search radius of %f".formatted(searchRadiusMetersMax));
 		}
 		return repository

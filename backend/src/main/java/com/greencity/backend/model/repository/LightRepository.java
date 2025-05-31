@@ -18,18 +18,13 @@ public interface LightRepository extends JpaRepository<LightEntity, UUID>, JpaSp
 
 	@Query(
 			value = """
-					SELECT le
+					SELECT *
 					FROM light_entity le
 					WHERE ST_DWithin(
 					  ST_SetSRID(ST_MakePoint(le.longitude, le.latitude), 4326)::geography,
 					  ST_SetSRID(ST_MakePoint(:longitude, :latitude),    4326)::geography,
 					  :radius
 					)
-					ORDER BY ST_Distance(
-					  ST_SetSRID(ST_MakePoint(le.longitude, le.latitude), 4326)::geography,
-					  ST_SetSRID(ST_MakePoint(:longitude, :latitude),    4326)::geography
-					)
-					LIMIT :limit
 					""",
 			nativeQuery = true
 	)
