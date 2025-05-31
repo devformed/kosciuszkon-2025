@@ -21,12 +21,19 @@ public class WebSecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		return http.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				/* for the sake of hackathon, replace with oauth2 resource server later
+				web sockets should validate auth in connect cmd */
 				.authorizeHttpRequests(httpRequests -> httpRequests
-						/* for the sake of hackathon, replace with oauth2 resource server later
-						web sockets should validate auth in connect cmd */
 						.requestMatchers("/ws/**").permitAll()
 						.anyRequest().permitAll()
 				)
+				.cors(cors -> cors.configurationSource(request -> {
+					var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
+					corsConfiguration.addAllowedOrigin("*");
+					corsConfiguration.addAllowedHeader("*");
+					corsConfiguration.addAllowedMethod("*");
+					return corsConfiguration;
+				}))
 				.build();
 	}
 }
