@@ -28,10 +28,10 @@ export class MapViewComponent implements OnInit {
 
     this.mapEntry.lights.forEach((ligth) => {
       const marker = new mapboxgl.Marker({ color: 'yellow' })
-        .setLngLat(ligth.pos)
+        .setLngLat(ligth.position)
         .setPopup(
           new mapboxgl.Popup().setText(
-            `${this.getBrightnessForTime(ligth.uuid)}`
+            `${this.getBrightnessConfig(ligth.uuid)}`
           )
         )
         .addTo(this.map);
@@ -42,7 +42,7 @@ export class MapViewComponent implements OnInit {
     });
   }
 
-  getBrightnessForTime(uuid: string): string {
+  getBrightnessConfig(uuid: string): string {
     const currentTime = new Date();
     const currentMinutes =
       currentTime.getHours() * 60 + currentTime.getMinutes();
@@ -53,7 +53,10 @@ export class MapViewComponent implements OnInit {
       return `No light found with ID: ${uuid}`;
     }
 
-    for (const [timeRange, brightness] of light.brightness.entries()) {
+    for (const [
+      timeRange,
+      brightnessConfig,
+    ] of light.brightnessConfig.entries()) {
       const fromMinutes = this.timeToMinutes(timeRange.from);
       const toMinutes = this.timeToMinutes(timeRange.to);
 
@@ -64,7 +67,7 @@ export class MapViewComponent implements OnInit {
 
       if (inRange) {
         return `Brightness at ${this.formatTime(currentTime)} - ${
-          brightness * 100
+          brightnessConfig * 100
         }%`;
       }
     }
@@ -88,24 +91,32 @@ export const sampleLampData: MapEntry = {
   lights: [
     {
       uuid: '123e4567-e89b-12d3-a456-426655440000',
+      note: 'note',
+      brightness: 0.9,
+      disableAfterSeconds: 1,
+      proximityActivationRadius: 1,
       address: 'ul. Kwiatowa 5, Kraków',
-      brightness: new Map<TimePeriod, number>([
+      brightnessConfig: new Map<TimePeriod, number>([
         [{ from: '06:00', to: '18:00' }, 0.9],
         [{ from: '18:00', to: '23:59' }, 0.4],
       ]),
-      pos: {
+      position: {
         lng: 19.935,
         lat: 50.0647,
       },
     },
     {
       uuid: '987f6543-e21c-45a6-b789-123456780000',
+      note: 'note',
+      brightness: 0.5,
+      disableAfterSeconds: 1,
+      proximityActivationRadius: 1,
       address: 'ul. Słoneczna 10, Kraków',
-      brightness: new Map<TimePeriod, number>([
+      brightnessConfig: new Map<TimePeriod, number>([
         [{ from: '00:00', to: '06:00' }, 0.1],
         [{ from: '18:00', to: '23:59' }, 1.0],
       ]),
-      pos: {
+      position: {
         lng: 19.9402,
         lat: 50.0678,
       },

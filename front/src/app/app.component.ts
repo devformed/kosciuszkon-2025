@@ -9,6 +9,7 @@ import { LightDetailsViewComponent } from './view/light-details/light-details-vi
 import { TimePeriod } from './models/time-period';
 import { MatDialog } from '@angular/material/dialog';
 import { LightFormComponent } from './form/light-form.component';
+import { LightService } from './service/light.service';
 
 @Component({
   selector: 'app-root',
@@ -24,7 +25,7 @@ export class AppComponent {
 
   mapEntry: MapEntry = sampleLampData;
 
-  constructor(private dialog: MatDialog) {}
+  constructor(private dialog: MatDialog, private lightService: LightService) {}
 
   onLampSelected(uuid: string) {
     const found = this.mapEntry.lights.find((light) => light.uuid === uuid);
@@ -36,20 +37,39 @@ export class AppComponent {
       width: '600px',
       data: {
         address: null,
-        brightness: new Map(),
+        brightnessConfig: new Map(),
         pos: [19.94, 50.06],
       },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       console.log('zapisano lampy:', result);
+      this.lightService.create(result).subscribe();
     });
   }
 
-  onBrightnessSave(updated: Map<TimePeriod, number>) {
+  onBrightnessSave(updated: LightEntry) {
     if (this.selectedLight) {
-      this.selectedLight.brightness = updated;
-      console.log('Zapisano nowe wartości:', updated);
+      const position: number[] = [];
+
+      if (Array.isArray(updated.position)) {
+        position.push(updated.position[0], updated.position[1]);
+      }
+      if ('lng' in updated.position) {
+        position.push(updated.position.lng, updated.position.lat);
+      }
+      if ('lon' in updated.position) {
+        position.push(updated.position.lon, updated.position.lat);
+      }
+      const dto = {
+        address: updated.address,
+        position: { lng: position[0], lat: position[1] },
+        brightness: updated.brightnessConfig,
+        disableAfterSeconds: updated.disableAfterSeconds,
+        proximityActivationRadius: updated.proximityActivationRadius,
+        note: updated.note,
+      };
+      this.lightService.update(updated.uuid, dto);
     }
   }
 }

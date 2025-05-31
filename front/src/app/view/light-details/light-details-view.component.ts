@@ -8,6 +8,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatButton } from '@angular/material/button';
 import { LngLatLike } from 'mapbox-gl';
 import { BrightnessComponent } from 'src/app/component/brightness/brightness.component';
 import { LightEntry } from 'src/app/models/light-entry';
@@ -26,29 +27,33 @@ import { TimePeriod } from 'src/app/models/time-period';
       @for (entry of brightnessEntries; track $index) {
       <app-brightness-entry (remove)="removeEntry($index)" [entry]="entry" />
       }
-      <button class="add" (click)="addEntry()">➕ Dodaj zakres</button>
-      <button class="save" (click)="saveChanges()">💾 Zapisz zmiany</button>
+      <button mat-button class="add" (click)="addEntry()">
+        ➕ Dodaj zakres
+      </button>
+      <button mat-button class="save" (click)="saveChanges()">
+        💾 Zapisz zmiany
+      </button>
     </div>
   `,
-  imports: [BrightnessComponent, FormsModule],
+  imports: [BrightnessComponent, FormsModule, MatButton],
   styleUrl: './light-details-view.component.scss',
 })
 export class LightDetailsViewComponent implements OnInit, OnChanges {
   @Input({ required: true }) light!: LightEntry;
   @Output() close = new EventEmitter<void>();
-  @Output() save = new EventEmitter<Map<TimePeriod, number>>();
+  @Output() save = new EventEmitter<LightEntry>();
 
-  brightnessEntries: BrightnessEntry[] = [];
+  brightnessEntries: BrightnessConfigEntry[] = [];
   position: string | null = null;
 
   ngOnInit(): void {
-    this.position = this.getPosition(this.light.pos);
-    this.brightnessEntries = Array.from(this.light.brightness.entries()).map(
-      ([period, value]) => ({
-        period: { ...period },
-        value,
-      })
-    );
+    this.position = this.getPosition(this.light.position);
+    this.brightnessEntries = Array.from(
+      this.light.brightnessConfig.entries()
+    ).map(([period, value]) => ({
+      period: { ...period },
+      value,
+    }));
     console.log(
       '🚀 ~ LightDetailsViewComponent ~ ngOnInit ~ this.brightnessEntries:',
       this.brightnessEntries
@@ -57,13 +62,13 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['light'] && this.light) {
-      this.position = this.getPosition(this.light.pos);
-      this.brightnessEntries = Array.from(this.light.brightness.entries()).map(
-        ([period, value]) => ({
-          period: { ...period },
-          value,
-        })
-      );
+      this.position = this.getPosition(this.light.position);
+      this.brightnessEntries = Array.from(
+        this.light.brightnessConfig.entries()
+      ).map(([period, value]) => ({
+        period: { ...period },
+        value,
+      }));
     }
   }
 
@@ -79,19 +84,20 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
   }
 
   saveChanges(): void {
-    const updated = new Map<TimePeriod, number>();
+    const updatedBrightness = new Map<TimePeriod, number>();
     for (const entry of this.brightnessEntries) {
-      updated.set(entry.period, entry.value);
+      updatedBrightness.set(entry.period, entry.value);
     }
-    this.save.emit(updated);
+    this.light.brightnessConfig = updatedBrightness;
+    this.save.emit(this.light);
   }
 
-  getBrightness(brightness: [TimePeriod, number]) {
-    const [timePeriod, value] = brightness;
+  getBrightnessConfig(brightnessConfig: [TimePeriod, number]) {
+    const [timePeriod, value] = brightnessConfig;
     return `${timePeriod.from} - ${timePeriod.to}: ${value * 100}%`;
   }
 
-  onBrightnessInput(event: Event, entry: BrightnessEntry) {
+  onBrightnessConfigInput(event: Event, entry: BrightnessConfigEntry) {
     const input = event.target as HTMLInputElement;
     const value = Number(input.value);
     entry.value = value / 100;
@@ -111,7 +117,7 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
   }
 }
 
-interface BrightnessEntry {
+interface BrightnessConfigEntry {
   period: TimePeriod;
   value: number;
 }

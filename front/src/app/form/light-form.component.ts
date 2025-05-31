@@ -40,6 +40,7 @@ import {
     BrightnessComponent,
     ReactiveFormsModule,
   ],
+  styleUrl: './light-form.component.scss',
 })
 export class LightFormComponent implements OnInit {
   lightForm!: FormGroup;
@@ -51,26 +52,25 @@ export class LightFormComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: Partial<LightDto>
   ) {
     this.lightForm = this.fb.group({
-      address: [data.address ?? '', [Validators.required]],
-      lat: [this.getLat(data.pos), [Validators.required]],
-      lng: [this.getLng(data.pos), [Validators.required]],
-      brightness: this.fb.array(this.brightnessEntries),
+      address: ['', [Validators.required]],
+      note: [''],
+      lat: [null, [Validators.required]],
+      lng: [null, [Validators.required]],
+      brightnessConfig: this.fb.array(this.brightnessEntries),
+      disableAfterSeconds: [null],
+      proximityActivationRadius: [null],
     });
   }
 
   ngOnInit() {
-    if (this.data.brightness) {
-      this.brightnessEntries = Array.from(this.data.brightness.entries()).map(
-        ([period, value]) => ({ period, value })
-      );
-    }
+    this.addEntry();
   }
 
-  get brightnessArray(): FormArray {
-    return this.lightForm.get('brightness') as FormArray;
+  get brightnessConfigArray(): FormArray {
+    return this.lightForm.get('brightnessConfig') as FormArray;
   }
 
-  createBrightnessGroup(period?: TimePeriod, value?: number): FormGroup {
+  createBrightnessConfigGroup(period?: TimePeriod, value?: number): FormGroup {
     return this.fb.group({
       from: [period?.from ?? '', Validators.required],
       to: [period?.to ?? '', Validators.required],
@@ -81,12 +81,12 @@ export class LightFormComponent implements OnInit {
     });
   }
 
-  addBrightnessEntry() {
-    this.brightnessArray.push(this.createBrightnessGroup());
+  addBrightnessConfigEntry() {
+    this.brightnessConfigArray.push(this.createBrightnessConfigGroup());
   }
 
-  removeBrightnessEntry(index: number) {
-    this.brightnessArray.removeAt(index);
+  removeBrightnessConfigEntry(index: number) {
+    this.brightnessConfigArray.removeAt(index);
   }
 
   save() {
@@ -97,9 +97,12 @@ export class LightFormComponent implements OnInit {
       );
 
       const dto: LightDto = {
-        address: this.lightForm.get('address')!.value,
-        pos: { lat: raw.lat, lng: raw.lng },
+        address: raw.address,
+        position: { lat: raw.lat, lng: raw.lng },
         brightness: brightnessMap,
+        disableAfterSeconds: raw.disableAfterSeconds,
+        proximityActivationRadius: raw.proximityActivationRadius,
+        note: raw.note,
       };
 
       console.log(dto);
@@ -116,17 +119,5 @@ export class LightFormComponent implements OnInit {
 
   cancel() {
     this.dialogRef.close(null);
-  }
-
-  private getLat(pos: any): number {
-    if (!pos) return 50;
-    if (Array.isArray(pos)) return pos[1];
-    return pos.lat ?? 50;
-  }
-
-  private getLng(pos: any): number {
-    if (!pos) return 19;
-    if (Array.isArray(pos)) return pos[0];
-    return pos.lng ?? 19;
   }
 }
