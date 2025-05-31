@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class LightService {
-  private baseUrl = 'http://192.168.1.140:8080/lights';
+  private baseUrl = 'http://localhost:8080/lights';
 
   constructor(private http: HttpClient) {}
 
