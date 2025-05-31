@@ -22,7 +22,7 @@ import java.util.UUID;
  * @author Anton Gorokh
  */
 @RestController
-@RequestMapping(path = "/lights", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/lights", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
 public class LightController {
 
@@ -48,12 +48,12 @@ public class LightController {
 		service.delete(uuid);
 	}
 
-	@PutMapping(path = "/{uuid}/heartbeat", consumes = MediaType.ALL_VALUE)
+	@PutMapping(path = "/{uuid}/heartbeat")
 	public void heartbeat(@PathVariable UUID uuid) {
 		service.heartbeat(uuid);
 	}
 
-	@PutMapping(path = "/{uuid}/motion-detected", consumes = MediaType.TEXT_PLAIN_VALUE)
+	@PutMapping(path = "/{uuid}/motion-detected")
 	public void motionDetected(@PathVariable UUID uuid, @RequestBody String pedestrianId) {
 		service.motionDetected(uuid, pedestrianId);
 	}
