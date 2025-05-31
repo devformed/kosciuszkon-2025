@@ -7,10 +7,10 @@ import java.util.Map;
  */
 public record LightEntry(
 		String uuid,
-		Map<TimePeriod, Double> brightness,
+		Double brightness,
 		String note,
 		String address,
 		GeoPosition position,
-		boolean heartbeatReceived
+		Map<TimePeriod, Double> brightnessConfig
 ) {
 }

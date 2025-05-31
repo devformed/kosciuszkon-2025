@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
@@ -30,6 +32,7 @@ import java.util.UUID;
 /**
  * @author Anton Gorokh
  */
+@Accessors(chain = true)
 @Getter
 @Setter
 @ToString
@@ -57,13 +60,31 @@ public class LightEntity implements Identifiable<UUID> {
 	@Nullable
 	private String note;
 
+	// assumes the server received localtime already converted to UTC
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(nullable = false)
-	private Map<TimePeriod, Double> brightness;
+	private Map<TimePeriod, Double> brightnessConfig;
+
+	@Column(nullable = false)
+	private Double brightness;
 
 	@Nullable
 	@Convert(converter = Jsr310JpaConverters.InstantConverter.class)
 	private Instant heartbeatAt;
+
+	@Nullable
+	@Convert(converter = Jsr310JpaConverters.InstantConverter.class)
+	private Instant motionAt;
+
+	@Nullable
+	@Convert(converter = Jsr310JpaConverters.InstantConverter.class)
+	private Instant disableAt;
+
+	@NotNull
+	private Integer disableAfterSeconds;
+
+	@Column(nullable = false)
+	private Double proximityActivationRadius;
 
 	private GeoPosition getPosition() {
 		return new GeoPosition(longitude, latitude);

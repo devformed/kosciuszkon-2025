@@ -2,6 +2,7 @@ package com.greencity.backend.model.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 /**
  * @author Anton Gorokh
@@ -9,7 +10,7 @@ import jakarta.validation.constraints.NotNull;
 public record GeoPositionRadiusDto(
 		@NotNull @Valid
 		GeoPosition position,
-		@NotNull
+		@NotNull @PositiveOrZero
 		Double radius
 ) {
 }
