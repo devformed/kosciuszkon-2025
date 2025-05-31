@@ -88,6 +88,7 @@ export const sampleLampData: MapEntry = {
   lights: [
     {
       uuid: '123e4567-e89b-12d3-a456-426655440000',
+      address: 'ul. Kwiatowa 5, Kraków',
       brightness: new Map<TimePeriod, number>([
         [{ from: '06:00', to: '18:00' }, 0.9],
         [{ from: '18:00', to: '23:59' }, 0.4],
@@ -99,6 +100,7 @@ export const sampleLampData: MapEntry = {
     },
     {
       uuid: '987f6543-e21c-45a6-b789-123456780000',
+      address: 'ul. Słoneczna 10, Kraków',
       brightness: new Map<TimePeriod, number>([
         [{ from: '00:00', to: '06:00' }, 0.1],
         [{ from: '18:00', to: '23:59' }, 1.0],

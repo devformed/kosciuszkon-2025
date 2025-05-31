@@ -1,9 +1,8 @@
 import { LngLatLike } from 'mapbox-gl';
 import { TimePeriod } from './time-period';
 
-export interface LightEntry {
-  uuid: string;
-  address: string;
-  brightness: Map<TimePeriod, number>;
+export interface LightDto {
+  address: string | null;
+  brightness: Map<TimePeriod, number> | null;
   pos: LngLatLike;
 }

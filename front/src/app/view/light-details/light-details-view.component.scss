@@ -20,3 +20,62 @@
   background: white;
   padding: 1rem;
 }
+
+.lamp-details-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 360px;
+  max-width: 100%;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  z-index: 100;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+h2 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+p {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #007bff;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button.add,
+button.save {
+  background-color: #007bff;
+  color: #fff;
+  font-weight: 500;
+  justify-content: center;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 0.5rem 0;
+}

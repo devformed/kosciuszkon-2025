@@ -1,5 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
 
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 /* Ustawienia bazowe */
 html,
 body {
@@ -60,4 +68,8 @@ ul li {
   color: #333;
   padding: 0;
   margin-left: 0.5rem;
+}
+
+::ng-deep .cdk-overlay-container {
+  z-index: 10000; // wyższy niż mapbox
 }

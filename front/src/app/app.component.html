@@ -5,6 +5,11 @@
     class="light-details-panel"
     [light]="selectedLight"
     (close)="selectedLight = null"
+    (save)="onBrightnessSave($event)"
   ></app-light-details-view>
+  } @else {
+  <button class="add-light-button" (click)="openAddLightForm()">
+    Dodaj lampę
+  </button>
   }
 </div>

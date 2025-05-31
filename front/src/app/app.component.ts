@@ -6,6 +6,9 @@ import {
 import { LightEntry } from './models/light-entry';
 import { MapEntry } from './models/map-entry';
 import { LightDetailsViewComponent } from './view/light-details/light-details-view.component';
+import { TimePeriod } from './models/time-period';
+import { MatDialog } from '@angular/material/dialog';
+import { LightFormComponent } from './form/light-form.component';
 
 @Component({
   selector: 'app-root',
@@ -21,12 +24,27 @@ export class AppComponent {
 
   mapEntry: MapEntry = sampleLampData;
 
+  constructor(private dialog: MatDialog) {}
+
   onLampSelected(uuid: string) {
     const found = this.mapEntry.lights.find((light) => light.uuid === uuid);
     this.selectedLight = found ?? null;
-    console.log(
-      '🚀 ~ AppComponent ~ onLampSelected ~ this.selectedLamp:',
-      this.selectedLight
-    );
+  }
+
+  openAddLightForm() {
+    const dialogRef = this.dialog.open(LightFormComponent, {
+      width: '400px',
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('zapisano lampy:', result);
+    });
+  }
+
+  onBrightnessSave(updated: Map<TimePeriod, number>) {
+    if (this.selectedLight) {
+      this.selectedLight.brightness = updated;
+      console.log('Zapisano nowe wartości:', updated);
+    }
   }
 }

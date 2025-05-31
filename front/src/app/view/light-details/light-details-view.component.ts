@@ -7,7 +7,9 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { LngLatLike } from 'mapbox-gl';
+import { BrightnessComponent } from 'src/app/component/brightness/brightness.component';
 import { LightEntry } from 'src/app/models/light-entry';
 import { TimePeriod } from 'src/app/models/time-period';
 
@@ -15,46 +17,107 @@ import { TimePeriod } from 'src/app/models/time-period';
   selector: 'app-light-details-view',
   standalone: true,
   template: `
-    <div class="light-panel">
+    <div class="light-details-panel">
       <button class="close-button" (click)="close.emit()">✖</button>
-      <h2>Lampa {{ light.uuid }}</h2>
+      <h2>{{ light.address }}</h2>
       <p>Pozycja: {{ position }}</p>
       <p>Jasność:</p>
-      <ul>
-        @for (entry of brightness; track $index) {
-        <li>{{ entry }}</li>
-        }
-      </ul>
+
+      @for (entry of brightnessEntries; track $index) {
+      <!-- <div class="brightness-entry">
+        <div class="time-inputs">
+          <label
+            >From:
+            <input type="time" [(ngModel)]="entry.period.from" />
+          </label>
+          <label
+            >To:
+            <input type="time" [(ngModel)]="entry.period.to" />
+          </label>
+        </div>
+
+        <label>
+          Jasność: {{ entry.value * 100 | number : '1.0-0' }}%
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            [value]="entry.value * 100"
+            (input)="onBrightnessInput($event, entry)"
+          />
+        </label>
+
+        <button class="remove" (click)="removeEntry($index)">🗑️ Usuń</button>
+        <hr />
+      </div> -->
+      <app-brightness-entry (remove)="removeEntry($index)" [entry]="entry" />
+      }
+      <button class="add" (click)="addEntry()">➕ Dodaj zakres</button>
+      <button class="save" (click)="saveChanges()">💾 Zapisz zmiany</button>
     </div>
   `,
+  imports: [BrightnessComponent, FormsModule],
   styleUrl: './light-details-view.component.scss',
 })
 export class LightDetailsViewComponent implements OnInit, OnChanges {
   @Input({ required: true }) light!: LightEntry;
   @Output() close = new EventEmitter<void>();
+  @Output() save = new EventEmitter<Map<TimePeriod, number>>();
 
+  brightnessEntries: BrightnessEntry[] = [];
   position: string | null = null;
-  brightness: string[] | null = null;
 
   ngOnInit(): void {
     this.position = this.getPosition(this.light.pos);
-    this.brightness = Array.from(this.light.brightness.entries()).map((entry) =>
-      this.getBrightness(entry)
+    this.brightnessEntries = Array.from(this.light.brightness.entries()).map(
+      ([period, value]) => ({
+        period: { ...period },
+        value,
+      })
     );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['light'] && this.light) {
       this.position = this.getPosition(this.light.pos);
-      this.brightness = Array.from(this.light.brightness.entries()).map(
-        (entry) => this.getBrightness(entry)
+      this.brightnessEntries = Array.from(this.light.brightness.entries()).map(
+        ([period, value]) => ({
+          period: { ...period },
+          value,
+        })
       );
     }
+  }
+
+  addEntry(): void {
+    this.brightnessEntries.push({
+      period: { from: '00:00', to: '01:00' },
+      value: 0.5,
+    });
+  }
+
+  removeEntry(index: number): void {
+    this.brightnessEntries.splice(index, 1);
+  }
+
+  saveChanges(): void {
+    const updated = new Map<TimePeriod, number>();
+    for (const entry of this.brightnessEntries) {
+      updated.set(entry.period, entry.value);
+    }
+    this.save.emit(updated);
   }
 
   getBrightness(brightness: [TimePeriod, number]) {
     const [timePeriod, value] = brightness;
     return `${timePeriod.from} - ${timePeriod.to}: ${value * 100}%`;
+  }
+
+  onBrightnessInput(event: Event, entry: BrightnessEntry) {
+    const input = event.target as HTMLInputElement;
+    const value = Number(input.value);
+    entry.value = value / 100;
   }
 
   getPosition(pos: LngLatLike): string {
@@ -69,4 +132,9 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
     }
     return 'Unknown position';
   }
+}
+
+interface BrightnessEntry {
+  period: TimePeriod;
+  value: number;
 }
