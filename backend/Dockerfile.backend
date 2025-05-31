@@ -1,0 +1,4 @@
+FROM amazoncorretto:21-alpine-jdk
+WORKDIR /opt/greencity
+COPY target/greencity-backend-ready.jar ./app.jar
+ENTRYPOINT ["java","-jar","app.jar"]

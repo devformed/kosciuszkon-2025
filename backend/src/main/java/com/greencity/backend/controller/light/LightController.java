@@ -4,7 +4,6 @@ import com.greencity.backend.model.dto.GeoPositionRadiusDto;
 import com.greencity.backend.model.dto.LightDto;
 import com.greencity.backend.model.dto.LightEntry;
 import com.greencity.backend.service.light.LightService;
-import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -30,7 +29,7 @@ public class LightController {
 	private final LightService service;
 
 	@PostMapping(path = "/nearest")
-	public List<LightEntry> getNearest(@Validated GeoPositionRadiusDto geo) {
+	public List<LightEntry> getNearest(@RequestBody @Validated GeoPositionRadiusDto geo) {
 		return service.getNearest(geo.position(), geo.radius());
 	}
 
@@ -44,7 +43,7 @@ public class LightController {
 		service.update(uuid, dto);
 	}
 
-	@DeleteMapping(path = "/{uuid}=")
+	@DeleteMapping(path = "/{uuid}")
 	public void delete(@PathVariable UUID uuid) {
 		service.delete(uuid);
 	}
