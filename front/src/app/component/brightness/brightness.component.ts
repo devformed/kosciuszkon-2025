@@ -6,9 +6,8 @@ import { MatInput } from '@angular/material/input';
 import { MatTimepickerModule } from '@angular/material/';
 
 @Component({
-  standalone: true,
-  selector: 'app-brightness-entry',
-  template: `<div class="brightness-entry">
+    selector: 'app-brightness-entry',
+    template: `<div class="brightness-entry">
     <div class="time-inputs">
       <!-- <label>From: <input type="time" [(ngModel)]="entry.period.from" /></label> -->
       <input matInput [matTimepicker]="picker" />
@@ -28,8 +27,8 @@ import { MatTimepickerModule } from '@angular/material/';
     </label>
     <button class="remove" (click)="remove.emit()">🗑️ Usuń</button>
   </div> `,
-  imports: [DecimalPipe, FormsModule, MatInput, MatTimepickerModule],
-  styleUrls: ['./brightness.component.scss'],
+    imports: [DecimalPipe, FormsModule, MatInput, MatTimepickerModule],
+    styleUrls: ['./brightness.component.scss']
 })
 export class BrightnessComponent {
   @Input() entry!: BrightnessEntry;

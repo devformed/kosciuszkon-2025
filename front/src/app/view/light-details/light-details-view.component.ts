@@ -14,9 +14,8 @@ import { LightEntry } from 'src/app/models/light-entry';
 import { TimePeriod } from 'src/app/models/time-period';
 
 @Component({
-  selector: 'app-light-details-view',
-  standalone: true,
-  template: `
+    selector: 'app-light-details-view',
+    template: `
     <div class="light-details-panel">
       <button class="close-button" (click)="close.emit()">✖</button>
       <h2>{{ light.address }}</h2>
@@ -57,8 +56,8 @@ import { TimePeriod } from 'src/app/models/time-period';
       <button class="save" (click)="saveChanges()">💾 Zapisz zmiany</button>
     </div>
   `,
-  imports: [BrightnessComponent, FormsModule],
-  styleUrl: './light-details-view.component.scss',
+    imports: [BrightnessComponent, FormsModule],
+    styleUrl: './light-details-view.component.scss'
 })
 export class LightDetailsViewComponent implements OnInit, OnChanges {
   @Input({ required: true }) light!: LightEntry;

@@ -12,19 +12,18 @@ import { MatButton } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-  standalone: true,
-  selector: 'app-light-dialog',
-  templateUrl: './light-form.component.html',
-  imports: [
-    MatFormField,
-    MatLabel,
-    MatInput,
-    MatDialogTitle,
-    MatDialogContent,
-    MatButton,
-    FormsModule,
-    MatDialogActions,
-  ],
+    selector: 'app-light-dialog',
+    templateUrl: './light-form.component.html',
+    imports: [
+        MatFormField,
+        MatLabel,
+        MatInput,
+        MatDialogTitle,
+        MatDialogContent,
+        MatButton,
+        FormsModule,
+        MatDialogActions,
+    ]
 })
 export class LightFormComponent {
   uuid = crypto.randomUUID();

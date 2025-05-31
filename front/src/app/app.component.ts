@@ -11,11 +11,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { LightFormComponent } from './form/light-form.component';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [MapViewComponent, LightDetailsViewComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+    selector: 'app-root',
+    imports: [MapViewComponent, LightDetailsViewComponent],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss'
 })
 export class AppComponent {
   title = 'greencity';
