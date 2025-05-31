@@ -1,15 +1,19 @@
 package com.greencity.backend.controller.light;
 
-import com.greencity.backend.model.dto.LightEntry;
 import com.greencity.backend.model.dto.GeoPositionRadiusDto;
+import com.greencity.backend.model.dto.LightDto;
+import com.greencity.backend.model.dto.LightEntry;
 import com.greencity.backend.service.light.LightService;
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -25,20 +29,33 @@ public class LightController {
 
 	private final LightService service;
 
-	@PostMapping("/nearest")
-	public List<LightEntry> getNearest(GeoPositionRadiusDto geo) {
+	@PostMapping(path = "/nearest")
+	public List<LightEntry> getNearest(@Validated GeoPositionRadiusDto geo) {
 		return service.getNearest(geo.position(), geo.radius());
 	}
 
-	@PutMapping("/heartbeat")
-	public void heartbeat(@RequestParam UUID lightUuid) {
-		/* if there is no heartbeat for 30 seconds, the sensor will be considered as corrupted.
-		In that case, the light should be ON until the heartbeat is received again to ensure
-		the street's security - AG :) */
+	@PostMapping
+	public LightEntry create(@RequestBody @Validated LightDto dto) {
+		return service.create(dto);
 	}
 
-	@PutMapping("/motion-detected")
-	public void motionDetected(@RequestParam UUID lightUuid, @RequestParam @Nullable String pedestrianId) {
+	@PostMapping(path = "/{uuid}")
+	public void update(@PathVariable UUID uuid, @Validated @RequestBody LightDto dto) {
+		service.update(uuid, dto);
+	}
 
+	@DeleteMapping(path = "/{uuid}=")
+	public void delete(@PathVariable UUID uuid) {
+		service.delete(uuid);
+	}
+
+	@PutMapping(path = "/{uuid}/heartbeat", consumes = MediaType.ALL_VALUE)
+	public void heartbeat(@PathVariable UUID uuid) {
+		service.heartbeat(uuid);
+	}
+
+	@PutMapping(path = "/{uuid}/motion-detected", consumes = MediaType.TEXT_PLAIN_VALUE)
+	public void motionDetected(@PathVariable UUID uuid, @RequestBody String pedestrianId) {
+		service.motionDetected(uuid, pedestrianId);
 	}
 }

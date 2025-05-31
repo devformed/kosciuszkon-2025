@@ -16,7 +16,7 @@ public class LightWebSocketImpl implements LightWebSocket {
 	private final SimpMessagingTemplate messaging;
 
 	public void sendUpdate(LightEntry entry) {
-		messaging.convertAndSend("/websocket/region/%s/light".formatted(toRegionHash(entry)), entry);
+		messaging.convertAndSend("/client/region/%s/light".formatted(toRegionHash(entry)), entry);
 	}
 
 	private String toRegionHash(LightEntry entry) {
