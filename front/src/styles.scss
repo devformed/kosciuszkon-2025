@@ -1,1 +1,63 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Ustawienia bazowe */
+html,
+body {
+  height: 100%;
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  background-color: #f7f9fc;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Linki */
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Przyciski */
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Nagłówki */
+h1,
+h2,
+h3 {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #222;
+}
+
+/* Lista jasności */
+ul {
+  list-style: none;
+  padding: 0;
+}
+ul li {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.mapboxgl-popup-content button {
+  all: unset;
+  cursor: pointer;
+  font-weight: bold;
+  color: #333;
+  padding: 0;
+  margin-left: 0.5rem;
+}

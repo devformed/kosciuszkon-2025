@@ -1,0 +1,22 @@
+.close-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 1.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #888;
+
+  &:hover {
+    color: #333;
+  }
+}
+
+.lamp-panel {
+  position: absolute;
+  right: 0;
+  width: 300px;
+  background: white;
+  padding: 1rem;
+}
