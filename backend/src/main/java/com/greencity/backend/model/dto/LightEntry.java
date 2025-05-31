@@ -1,0 +1,13 @@
+package com.greencity.backend.model.dto;
+
+import java.util.Map;
+
+/**
+ * @author Anton Gorokh
+ */
+public record LightEntry(
+		String uuid,
+		Map<TimePeriod, Double> brightness,
+		GeoPosition pos
+) {
+}
