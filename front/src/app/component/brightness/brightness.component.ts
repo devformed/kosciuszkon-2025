@@ -102,7 +102,7 @@ export class BrightnessComponent implements OnInit {
   }
 }
 
-interface BrightnessEntry {
+export interface BrightnessEntry {
   period: TimePeriod;
   value: number;
 }

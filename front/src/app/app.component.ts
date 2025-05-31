@@ -33,7 +33,12 @@ export class AppComponent {
 
   openAddLightForm() {
     const dialogRef = this.dialog.open(LightFormComponent, {
-      width: '400px',
+      width: '600px',
+      data: {
+        address: null,
+        brightness: new Map(),
+        pos: [19.94, 50.06],
+      },
     });
 
     dialogRef.afterClosed().subscribe((result) => {

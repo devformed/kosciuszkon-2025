@@ -24,33 +24,6 @@ import { TimePeriod } from 'src/app/models/time-period';
       <p>Jasność:</p>
 
       @for (entry of brightnessEntries; track $index) {
-      <!-- <div class="brightness-entry">
-        <div class="time-inputs">
-          <label
-            >From:
-            <input type="time" [(ngModel)]="entry.period.from" />
-          </label>
-          <label
-            >To:
-            <input type="time" [(ngModel)]="entry.period.to" />
-          </label>
-        </div>
-
-        <label>
-          Jasność: {{ entry.value * 100 | number : '1.0-0' }}%
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="1"
-            [value]="entry.value * 100"
-            (input)="onBrightnessInput($event, entry)"
-          />
-        </label>
-
-        <button class="remove" (click)="removeEntry($index)">🗑️ Usuń</button>
-        <hr />
-      </div> -->
       <app-brightness-entry (remove)="removeEntry($index)" [entry]="entry" />
       }
       <button class="add" (click)="addEntry()">➕ Dodaj zakres</button>
