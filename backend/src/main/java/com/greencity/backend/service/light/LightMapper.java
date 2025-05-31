@@ -17,12 +17,12 @@ public interface LightMapper {
 
 	LightMapper INSTANCE = Mappers.getMapper(LightMapper.class);
 
-	@Mapping(target = "position.longitude", source = "entity.longitude")
-	@Mapping(target = "position.latitude", source = "entity.latitude")
+	@Mapping(target = "position.lng", source = "entity.lng")
+	@Mapping(target = "position.lat", source = "entity.lat")
 	LightEntry toEntry(LightEntity entity);
 
-	@Mapping(target = "longitude", source = "dto.position.longitude")
-	@Mapping(target = "latitude", source = "dto.position.latitude")
+	@Mapping(target = "lng", source = "dto.position.lng")
+	@Mapping(target = "lat", source = "dto.position.lat")
 	@Mapping(target = "brightness", constant = "1.0")
 	@Mapping(target = "uuid", ignore = true)
 	@Mapping(target = "heartbeatAt", ignore = true)

@@ -26,13 +26,13 @@ public class LightWebSocketImpl implements LightWebSocket {
 	}
 
 	/*
-	 * To not update websocket clients world-wide, we split the longitude/latitude
+	 * To not update websocket clients world-wide, we split the lng/lat
 	 * into 'chunks' of a given size so that
 	 * precision	5 ≈ 4.9×4.9 km,	6≈1.2×0.61 km,	7≈153×153 m, etc.
 	 */
 	private String toRegionHash(LightEntry entry) {
-		var lat = entry.position().latitude().doubleValue();
-		var lon = entry.position().longitude().doubleValue();
+		var lat = entry.position().lat().doubleValue();
+		var lon = entry.position().lng().doubleValue();
 		GeoHash hash = GeoHash.withCharacterPrecision(lat, lon, this.hashPrecision);
 		return hash.toBase32();
 	}

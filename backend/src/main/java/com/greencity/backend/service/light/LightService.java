@@ -46,7 +46,7 @@ public class LightService {
 			throw new ValidationException("Search radius exceeds search radius of %f".formatted(searchRadiusMetersMax));
 		}
 		return repository
-				.findNearest(position.longitude(), position.latitude(), radius)
+				.findNearest(position.lng(), position.lat(), radius)
 				.stream()
 				.map(LightMapper.INSTANCE::toEntry)
 				.toList();
