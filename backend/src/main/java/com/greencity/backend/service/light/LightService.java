@@ -3,7 +3,7 @@ package com.greencity.backend.service.light;
 import com.greencity.backend.model.dto.GeoPosition;
 import com.greencity.backend.model.dto.LightDto;
 import com.greencity.backend.model.dto.LightEntry;
-import com.greencity.backend.model.dto.TimePeriod;
+import com.greencity.backend.model.dto.TimePeriodSetting;
 import com.greencity.backend.model.entity.LightEntity;
 import com.greencity.backend.model.entity.LightEntity_;
 import com.greencity.backend.model.repository.LightRepository;
@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -134,22 +133,21 @@ public class LightService {
 	}
 
 	private void enableBrightness(LightEntity entity) {
-		Map<TimePeriod, Double> brightnessConfig = entity.getBrightnessConfig();
+		var brightnessConfig = entity.getBrightnessConfig();
 		if (brightnessConfig.isEmpty()) {
 			entity.setBrightness(1.);
 			return;
 		}
 		LocalTime time = LocalTime.now();
-		brightnessConfig.keySet()
-				.stream()
+		brightnessConfig.stream()
 				.filter(period -> isBetween(time, period))
 				.findAny()
-				.ifPresent(period -> entity.setBrightness(brightnessConfig.get(period)));
+				.ifPresent(period -> entity.setBrightness(period.brightness()));
 	}
 
-	private boolean isBetween(LocalTime time, TimePeriod period) {
-		LocalTime from = period.from();
-		LocalTime to = period.to();
+	private boolean isBetween(LocalTime time, TimePeriodSetting period) {
+		LocalTime from = toLocalTime(period.from());
+		LocalTime to = toLocalTime(period.to());
 
 		if (from.equals(to)) { // full-day shortcut?
 			return true;
@@ -158,5 +156,10 @@ public class LightService {
 			return !time.isBefore(from) && time.isBefore(to);
 		}
 		return !time.isBefore(from) || time.isBefore(to); // wraps midnight: e.g. 20:00–04:00
+	}
+
+	private LocalTime toLocalTime(String str) {
+		String[] parts = str.split(":");
+		return LocalTime.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
 	}
 }
