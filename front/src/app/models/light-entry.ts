@@ -1,13 +1,13 @@
 import { LngLatLike } from 'mapbox-gl';
-import { TimePeriod } from './time-period';
+import { TimePeriodSetting } from './time-period';
 
 export interface LightEntry {
   uuid: string;
   brightness: number;
-  note: string;
+  note: string | null;
   address: string;
   position: LngLatLike;
   disableAfterSeconds: number | null;
   proximityActivationRadius: number | null;
-  brightnessConfig: Map<TimePeriod, number>;
+  brightnessConfig: Array<TimePeriodSetting>;
 }

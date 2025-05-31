@@ -1,12 +1,7 @@
-import { Component } from '@angular/core';
-import {
-  MapViewComponent,
-  sampleLampData,
-} from './view/map/map-view.component';
+import { Component, OnInit } from '@angular/core';
+import { MapViewComponent } from './view/map/map-view.component';
 import { LightEntry } from './models/light-entry';
-import { MapEntry } from './models/map-entry';
 import { LightDetailsViewComponent } from './view/light-details/light-details-view.component';
-import { TimePeriod } from './models/time-period';
 import { MatDialog } from '@angular/material/dialog';
 import { LightFormComponent } from './form/light-form.component';
 import { LightService } from './service/light.service';
@@ -18,17 +13,25 @@ import { LightService } from './service/light.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'greencity';
 
   selectedLight: LightEntry | null = null;
 
-  mapEntry: MapEntry = sampleLampData;
+  mapEntry: LightEntry[] | null = null;
 
   constructor(private dialog: MatDialog, private lightService: LightService) {}
 
+  ngOnInit(): void {
+    this.lightService
+      .getNearest({ position: { lng: 19.94, lat: 50.05 }, radius: 9000 })
+      .subscribe((lights) => {
+        this.mapEntry = lights;
+      });
+  }
+
   onLampSelected(uuid: string) {
-    const found = this.mapEntry.lights.find((light) => light.uuid === uuid);
+    const found = this.mapEntry?.find((light) => light.uuid === uuid);
     this.selectedLight = found ?? null;
   }
 
@@ -43,12 +46,11 @@ export class AppComponent {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      console.log('zapisano lampy:', result);
       this.lightService.create(result).subscribe();
     });
   }
 
-  onBrightnessSave(updated: LightEntry) {
+  onLightEdit(updated: LightEntry) {
     if (this.selectedLight) {
       const position: number[] = [];
 
@@ -64,12 +66,13 @@ export class AppComponent {
       const dto = {
         address: updated.address,
         position: { lng: position[0], lat: position[1] },
-        brightness: updated.brightnessConfig,
+        brightnessConfig: updated.brightnessConfig,
         disableAfterSeconds: updated.disableAfterSeconds,
         proximityActivationRadius: updated.proximityActivationRadius,
         note: updated.note,
       };
-      this.lightService.update(updated.uuid, dto);
+      console.log('🚀 ~ AppComponent ~ onLightEdit ~ dto:', dto);
+      this.lightService.update(updated.uuid, dto).subscribe();
     }
   }
 }

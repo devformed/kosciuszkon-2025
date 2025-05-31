@@ -5,7 +5,7 @@
     class="light-details-panel"
     [light]="selectedLight"
     (close)="selectedLight = null"
-    (save)="onBrightnessSave($event)"
+    (save)="onLightEdit($event)"
   ></app-light-details-view>
   } @else {
   <button class="add-light-button" (click)="openAddLightForm()">

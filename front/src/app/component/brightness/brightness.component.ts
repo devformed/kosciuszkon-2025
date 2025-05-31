@@ -1,7 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TimePeriod } from '../../models/time-period';
+import { TimePeriodSetting } from '../../models/time-period';
 import { MatFormField, MatInput, MatLabel } from '@angular/material/input';
 import {
   MatTimepickerModule,
@@ -36,13 +36,13 @@ import { MatButton } from '@angular/material/button';
       </mat-form-field>
     </div>
     <mat-label>
-      Jasność: {{ entry.value * 100 | number : '1.0-0' }}%
+      Jasność: {{ entry.brightness * 100 | number : '1.0-0' }}%
       <input
         mat-input
         type="range"
         min="0"
         max="100"
-        [value]="entry.value * 100"
+        [value]="entry.brightness * 100"
         (input)="onBrightnessInput($event, entry)"
       />
     </mat-label>
@@ -61,30 +61,30 @@ import { MatButton } from '@angular/material/button';
   styleUrls: ['./brightness.component.scss'],
 })
 export class BrightnessComponent implements OnInit {
-  @Input() entry!: BrightnessEntry;
+  @Input() entry!: TimePeriodSetting;
   @Output() remove = new EventEmitter<void>();
   dateFrom: Date | null = null;
   dateTo: Date | null = null;
 
   ngOnInit() {
-    this.dateFrom = this.timeStringToDate(this.entry.period.from);
-    this.dateTo = this.timeStringToDate(this.entry.period.to);
+    this.dateFrom = this.timeStringToDate(this.entry.from);
+    this.dateTo = this.timeStringToDate(this.entry.to);
   }
 
   onFromChange(date: Date) {
     this.dateFrom = date;
-    this.entry.period.from = this.dateToTimeString(date);
+    this.entry.from = this.dateToTimeString(date);
   }
 
   onToChange(date: Date) {
     this.dateTo = date;
-    this.entry.period.to = this.dateToTimeString(date);
+    this.entry.to = this.dateToTimeString(date);
   }
 
-  onBrightnessInput(event: Event, entry: BrightnessEntry) {
+  onBrightnessInput(event: Event, entry: TimePeriodSetting) {
     const input = event.target as HTMLInputElement;
     const value = Number(input.value);
-    entry.value = value / 100;
+    entry.brightness = value / 100;
   }
 
   timeStringToDate(time: string): Date {
@@ -100,9 +100,4 @@ export class BrightnessComponent implements OnInit {
       .toString()
       .padStart(2, '0')}`;
   }
-}
-
-export interface BrightnessEntry {
-  period: TimePeriod;
-  value: number;
 }

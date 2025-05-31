@@ -18,11 +18,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TimePeriod } from '../models/time-period';
-import {
-  BrightnessComponent,
-  BrightnessEntry,
-} from '../component/brightness/brightness.component';
+import { TimePeriodSetting } from '../models/time-period';
+import { BrightnessComponent } from '../component/brightness/brightness.component';
 
 @Component({
   selector: 'app-light-dialog',
@@ -44,7 +41,7 @@ import {
 })
 export class LightFormComponent implements OnInit {
   lightForm!: FormGroup;
-  brightnessEntries: BrightnessEntry[] = [];
+  brightnessEntries: TimePeriodSetting[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -53,12 +50,18 @@ export class LightFormComponent implements OnInit {
   ) {
     this.lightForm = this.fb.group({
       address: ['', [Validators.required]],
-      note: [''],
+      note: [null],
       lat: [null, [Validators.required]],
       lng: [null, [Validators.required]],
       brightnessConfig: this.fb.array(this.brightnessEntries),
-      disableAfterSeconds: [null],
-      proximityActivationRadius: [null],
+      disableAfterSeconds: [
+        null,
+        [Validators.min(0), Validators.max(3600), Validators.required],
+      ],
+      proximityActivationRadius: [
+        null,
+        [Validators.min(0), Validators.max(1000), Validators.required],
+      ],
     });
   }
 
@@ -70,11 +73,14 @@ export class LightFormComponent implements OnInit {
     return this.lightForm.get('brightnessConfig') as FormArray;
   }
 
-  createBrightnessConfigGroup(period?: TimePeriod, value?: number): FormGroup {
+  createBrightnessConfigGroup(
+    period?: TimePeriodSetting,
+    value?: number
+  ): FormGroup {
     return this.fb.group({
       from: [period?.from ?? '', Validators.required],
       to: [period?.to ?? '', Validators.required],
-      value: [
+      brightness: [
         value ?? 0.5,
         [Validators.required, Validators.min(0), Validators.max(1)],
       ],
@@ -92,14 +98,16 @@ export class LightFormComponent implements OnInit {
   save() {
     if (this.lightForm.valid) {
       const raw = this.lightForm.getRawValue();
-      const brightnessMap = new Map<TimePeriod, number>(
-        this.brightnessEntries.map((e) => [e.period, e.value])
+      console.log('🚀 ~ LightFormComponent ~ save ~ raw:', raw);
+      console.log(
+        '🚀 ~ LightFormComponent ~ save ~ brightnessMap:',
+        this.brightnessEntries
       );
 
       const dto: LightDto = {
         address: raw.address,
         position: { lat: raw.lat, lng: raw.lng },
-        brightness: brightnessMap,
+        brightnessConfig: this.brightnessEntries,
         disableAfterSeconds: raw.disableAfterSeconds,
         proximityActivationRadius: raw.proximityActivationRadius,
         note: raw.note,
@@ -110,10 +118,23 @@ export class LightFormComponent implements OnInit {
     }
   }
 
+  serializeLightDto(dto: LightDto): any {
+    return {
+      ...dto,
+      brightnessConfig: dto.brightnessConfig
+        ? Array.from(dto.brightnessConfig.entries()).map(([period, value]) => ({
+            period,
+            value,
+          }))
+        : [],
+    };
+  }
+
   addEntry(): void {
     this.brightnessEntries.push({
-      period: { from: '00:00', to: '01:00' },
-      value: 0.5,
+      from: '00:00',
+      to: '01:00',
+      brightness: 0.5,
     });
   }
 

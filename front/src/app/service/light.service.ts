@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LightEntry } from '../models/light-entry';
 import { LightDto } from '../models/light-dto';
 import { GeoPositionRadiusDto } from '../models/geo-position-radius-dto';
@@ -18,7 +18,12 @@ export class LightService {
   }
 
   create(dto: LightDto): Observable<LightEntry> {
-    return this.http.post<LightEntry>(this.baseUrl, dto);
+    console.log('🚀 ~ LightService ~ create ~ dto:', dto);
+    return this.http.post<LightEntry>(this.baseUrl, dto, {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+      }),
+    });
   }
 
   update(uuid: string, dto: LightDto): Observable<void> {

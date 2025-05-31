@@ -1,4 +1,5 @@
-export interface TimePeriod {
+export interface TimePeriodSetting {
   from: string;
   to: string;
+  brightness: number;
 }

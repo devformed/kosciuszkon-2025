@@ -1,11 +1,11 @@
 import { LngLatLike } from 'mapbox-gl';
-import { TimePeriod } from './time-period';
+import { TimePeriodSetting } from './time-period';
 
 export interface LightDto {
   address: string | null;
   note: string | null;
   disableAfterSeconds: number | null;
   proximityActivationRadius: number | null;
-  brightness: Map<TimePeriod, number> | null;
+  brightnessConfig: Array<TimePeriodSetting> | null;
   position: LngLatLike;
 }

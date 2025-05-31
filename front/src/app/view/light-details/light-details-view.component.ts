@@ -9,10 +9,15 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
+import {
+  MatFormField,
+  MatInputModule,
+  MatLabel,
+} from '@angular/material/input';
 import { LngLatLike } from 'mapbox-gl';
 import { BrightnessComponent } from 'src/app/component/brightness/brightness.component';
 import { LightEntry } from 'src/app/models/light-entry';
-import { TimePeriod } from 'src/app/models/time-period';
+import { TimePeriodSetting } from 'src/app/models/time-period';
 
 @Component({
   selector: 'app-light-details-view',
@@ -21,7 +26,19 @@ import { TimePeriod } from 'src/app/models/time-period';
     <div class="light-details-panel">
       <button class="close-button" (click)="close.emit()">✖</button>
       <h2>{{ light.address }}</h2>
-      <p>Pozycja: {{ position }}</p>
+      <p style="margin-bottom: 1rem;">Pozycja:<br />{{ position }}</p>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Opis</mat-label>
+        <input matInput [(ngModel)]="note" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Maksymalna nieaktywność [s]</mat-label>
+        <input matInput [(ngModel)]="disableAfterSeconds" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Obręb</mat-label>
+        <input matInput [(ngModel)]="proximityActivationRadius" />
+      </mat-form-field>
       <p>Jasność:</p>
 
       @for (entry of brightnessEntries; track $index) {
@@ -35,7 +52,14 @@ import { TimePeriod } from 'src/app/models/time-period';
       </button>
     </div>
   `,
-  imports: [BrightnessComponent, FormsModule, MatButton],
+  imports: [
+    BrightnessComponent,
+    FormsModule,
+    MatButton,
+    MatFormField,
+    MatLabel,
+    MatInputModule,
+  ],
   styleUrl: './light-details-view.component.scss',
 })
 export class LightDetailsViewComponent implements OnInit, OnChanges {
@@ -43,39 +67,36 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<LightEntry>();
 
-  brightnessEntries: BrightnessConfigEntry[] = [];
+  brightnessEntries: TimePeriodSetting[] = [];
   position: string | null = null;
+  note: string | null = null;
+  disableAfterSeconds: number | null = null;
+  proximityActivationRadius: number | null = null;
 
   ngOnInit(): void {
-    this.position = this.getPosition(this.light.position);
-    this.brightnessEntries = Array.from(
-      this.light.brightnessConfig.entries()
-    ).map(([period, value]) => ({
-      period: { ...period },
-      value,
-    }));
-    console.log(
-      '🚀 ~ LightDetailsViewComponent ~ ngOnInit ~ this.brightnessEntries:',
-      this.brightnessEntries
-    );
+    this.getLightData();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['light'] && this.light) {
-      this.position = this.getPosition(this.light.position);
-      this.brightnessEntries = Array.from(
-        this.light.brightnessConfig.entries()
-      ).map(([period, value]) => ({
-        period: { ...period },
-        value,
-      }));
+      this.getLightData();
     }
+  }
+
+  getLightData() {
+    this.position = this.getPosition(this.light.position);
+    this.brightnessEntries = this.light.brightnessConfig;
+    this.note = this.light.note || null;
+    this.disableAfterSeconds = this.light.disableAfterSeconds || null;
+    this.proximityActivationRadius =
+      this.light.proximityActivationRadius || null;
   }
 
   addEntry(): void {
     this.brightnessEntries.push({
-      period: { from: '00:00', to: '01:00' },
-      value: 0.5,
+      from: '00:00',
+      to: '01:00',
+      brightness: 0.5,
     });
   }
 
@@ -84,23 +105,35 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
   }
 
   saveChanges(): void {
-    const updatedBrightness = new Map<TimePeriod, number>();
-    for (const entry of this.brightnessEntries) {
-      updatedBrightness.set(entry.period, entry.value);
-    }
+    const updatedBrightness = new Array<TimePeriodSetting>();
+    this.brightnessEntries.forEach((entry) => {
+      updatedBrightness.push({
+        from: entry.from,
+        to: entry.to,
+        brightness: entry.brightness,
+      });
+    });
     this.light.brightnessConfig = updatedBrightness;
+    this.light.disableAfterSeconds = this.disableAfterSeconds;
+    this.light.note = this.note;
+    this.light.proximityActivationRadius = this.proximityActivationRadius;
+    console.log(
+      '🚀 ~ LightDetailsViewComponent ~ saveChanges ~ this.light:',
+      this.light
+    );
     this.save.emit(this.light);
   }
 
-  getBrightnessConfig(brightnessConfig: [TimePeriod, number]) {
-    const [timePeriod, value] = brightnessConfig;
-    return `${timePeriod.from} - ${timePeriod.to}: ${value * 100}%`;
+  getBrightnessConfig(brightnessConfig: TimePeriodSetting) {
+    return `${brightnessConfig.from} - ${brightnessConfig.to}: ${
+      brightnessConfig.brightness * 100
+    }%`;
   }
 
-  onBrightnessConfigInput(event: Event, entry: BrightnessConfigEntry) {
+  onBrightnessConfigInput(event: Event, entry: TimePeriodSetting) {
     const input = event.target as HTMLInputElement;
     const value = Number(input.value);
-    entry.value = value / 100;
+    entry.brightness = value / 100;
   }
 
   getPosition(pos: LngLatLike): string {
@@ -115,9 +148,4 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
     }
     return 'Unknown position';
   }
-}
-
-interface BrightnessConfigEntry {
-  period: TimePeriod;
-  value: number;
 }
