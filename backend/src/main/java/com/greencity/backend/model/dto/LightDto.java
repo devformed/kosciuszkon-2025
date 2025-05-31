@@ -2,7 +2,7 @@ package com.greencity.backend.model.dto;
 
 import jakarta.validation.Valid;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author Anton Gorokh
@@ -13,6 +13,6 @@ public record LightDto(
 		String note,
 		Integer disableAfterSeconds,
 		Double proximityActivationRadius,
-		Map<TimePeriod, Double> brightnessConfig
+		List<TimePeriodSetting> brightnessConfig
 ) {
 }

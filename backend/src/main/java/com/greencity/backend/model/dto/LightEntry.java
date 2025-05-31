@@ -1,6 +1,6 @@
 package com.greencity.backend.model.dto;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author Anton Gorokh
@@ -11,6 +11,6 @@ public record LightEntry(
 		String note,
 		String address,
 		GeoPosition position,
-		Map<TimePeriod, Double> brightnessConfig
+		List<TimePeriodSetting> brightnessConfig
 ) {
 }
