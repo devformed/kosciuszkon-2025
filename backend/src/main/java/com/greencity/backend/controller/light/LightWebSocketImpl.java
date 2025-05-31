@@ -16,7 +16,7 @@ public class LightWebSocketImpl implements LightWebSocket {
 	private final int hashPrecision;
 	private final SimpMessagingTemplate messaging;
 
-	public LightWebSocketImpl(@Value("${com.greencity.web-socket.light.hash-precision:5}") int hashPrecision, SimpMessagingTemplate messaging) {
+	public LightWebSocketImpl(@Value("${com.greencity.web-socket.light.hash-precision:6}") int hashPrecision, SimpMessagingTemplate messaging) {
 		this.hashPrecision = hashPrecision;
 		this.messaging = messaging;
 	}
@@ -25,6 +25,11 @@ public class LightWebSocketImpl implements LightWebSocket {
 		messaging.convertAndSend("/client/region/%s/light".formatted(toRegionHash(entry)), entry);
 	}
 
+	/*
+	 * To not update websocket clients world-wide, we split the longitude/latitude
+	 * into 'chunks' of a given size so that
+	 * precision	5 ≈ 4.9×4.9 km,	6≈1.2×0.61 km,	7≈153×153 m, etc.
+	 */
 	private String toRegionHash(LightEntry entry) {
 		var lat = entry.position().latitude().doubleValue();
 		var lon = entry.position().longitude().doubleValue();
