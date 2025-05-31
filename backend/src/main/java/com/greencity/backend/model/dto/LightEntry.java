@@ -8,6 +8,9 @@ import java.util.Map;
 public record LightEntry(
 		String uuid,
 		Map<TimePeriod, Double> brightness,
-		GeoPosition pos
+		String note,
+		String address,
+		GeoPosition position,
+		boolean heartbeatReceived
 ) {
 }
