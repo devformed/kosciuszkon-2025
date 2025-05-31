@@ -28,7 +28,7 @@ public interface LightRepository extends JpaRepository<LightEntity, UUID>, JpaSp
 					""",
 			nativeQuery = true
 	)
-	List<LightEntity> findNearest(@Param("lng") BigDecimal longitude,
-								  @Param("lat") BigDecimal latitude,
+	List<LightEntity> findNearest(@Param("longitude") BigDecimal longitude,
+								  @Param("latitude") BigDecimal latitude,
 								  @Param("radius") Double radius);
 }
