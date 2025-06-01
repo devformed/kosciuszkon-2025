@@ -14,6 +14,7 @@ import { Pedestrian } from 'src/app/models/pedestrian';
 import * as turf from '@turf/turf';
 import { LightMapBridgeService } from 'src/app/service/light-map-bridge.service';
 import { LightService } from 'src/app/service/light.service';
+import { pedestrians } from 'src/app/mock-data/mock-data';
 
 @Component({
   standalone: true,
@@ -22,10 +23,11 @@ import { LightService } from 'src/app/service/light.service';
   styleUrls: ['./map-view.component.scss'],
 })
 export class MapViewComponent implements OnInit {
+  @Input({ required: true }) mapEntry: LightEntry[] = [];
   @Output() lampSelected = new EventEmitter<string>();
   map!: mapboxgl.Map;
-  pedestrians: Pedestrian[] = mockPedestrians;
-  @Input({ required: true }) mapEntry: LightEntry[] = [];
+  pedestrians: Pedestrian[] = pedestrians;
+  pedestrianMarkers = new Map<string, mapboxgl.Marker>();
 
   constructor(
     private lightMapBridgeService: LightMapBridgeService,
@@ -34,7 +36,6 @@ export class MapViewComponent implements OnInit {
 
   ngOnInit(): void {
     this.initMap();
-    // this.startPedestrianSimulation(this.pedestrians, this.mapEntry);
   }
 
   initMap() {
@@ -90,15 +91,48 @@ export class MapViewComponent implements OnInit {
           this.drawCircle(center, r);
         }
       });
+
+      this.startPedestrianSimulation(this.mapEntry);
     });
   }
 
-  startPedestrianSimulation(pedestrians: Pedestrian[], lights: LightEntry[]) {
+  startPedestrianSimulation(lights: LightEntry[]) {
+    this.pedestrianMarkers = new Map<string, mapboxgl.Marker>();
+
+    this.pedestrians.forEach((pedestrian) => {
+      const marker = this.createPedestrianMarker(pedestrian);
+      this.pedestrianMarkers.set(pedestrian.id, marker);
+    });
+
     setInterval(() => {
-      pedestrians.forEach((pedestrian) => {
-        pedestrian.stepIndex =
-          (pedestrian.stepIndex + 1) % pedestrian.path.length;
+      (this.pedestrians ?? []).forEach((pedestrian) => {
+        pedestrian.stepIndex += pedestrian.direction;
+
+        if (
+          pedestrian.stepIndex >= pedestrian.path.length - 1 ||
+          pedestrian.stepIndex <= 0
+        ) {
+          pedestrian.direction *= -1;
+          pedestrian.lapCount++;
+
+          if (pedestrian.lapCount >= pedestrian.maxLaps * 2) {
+            pedestrian.active = false;
+
+            const marker = this.pedestrianMarkers.get(pedestrian.id);
+            if (marker) {
+              marker.remove();
+              this.pedestrianMarkers.delete(pedestrian.id);
+            }
+
+            console.log(`🚶 ${pedestrian.id} zakończył trasę`);
+            return;
+          }
+        }
+
         pedestrian.position = pedestrian.path[pedestrian.stepIndex];
+
+        const marker = this.pedestrianMarkers.get(pedestrian.id);
+        marker?.setLngLat(pedestrian.position);
 
         lights.forEach((light) => {
           const lightPos = this.convertToArray(light.position);
@@ -119,7 +153,19 @@ export class MapViewComponent implements OnInit {
           }
         });
       });
-    }, 2000);
+    }, 50);
+  }
+
+  createPedestrianMarker(pedestrian: Pedestrian): mapboxgl.Marker {
+    const el = document.createElement('div');
+    el.className = 'pedestrian-marker';
+    el.title = pedestrian.id;
+    el.innerText = '🚶';
+    el.style.fontSize = '24px';
+
+    return new mapboxgl.Marker(el)
+      .setLngLat(pedestrian.position)
+      .addTo(this.map);
   }
 
   removeCircle() {
@@ -211,42 +257,3 @@ export class MapViewComponent implements OnInit {
     ).padStart(2, '0')}`;
   }
 }
-
-export const mockPedestrians: Pedestrian[] = [
-  {
-    id: 'ped-1',
-    position: [19.9405, 50.0505],
-    path: [
-      [19.9405, 50.0505],
-      [19.941, 50.0508],
-      [19.9415, 50.051],
-      [19.942, 50.0512],
-      [19.9425, 50.0515],
-    ],
-    stepIndex: 0,
-  },
-  {
-    id: 'ped-2',
-    position: [19.939, 50.049],
-    path: [
-      [19.939, 50.049],
-      [19.9395, 50.0495],
-      [19.94, 50.05],
-      [19.9405, 50.0505],
-      [19.941, 50.051],
-    ],
-    stepIndex: 0,
-  },
-  {
-    id: 'ped-3',
-    position: [19.938, 50.048],
-    path: [
-      [19.938, 50.048],
-      [19.9385, 50.0485],
-      [19.939, 50.049],
-      [19.9395, 50.0495],
-      [19.94, 50.05],
-    ],
-    stepIndex: 0,
-  },
-];
