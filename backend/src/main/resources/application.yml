@@ -8,9 +8,10 @@ spring:
     username: admin
     url: jdbc:postgresql://localhost:5433/greencity
     password: admin
-  jpa.properties.hibernate:
-    dialect: org.hibernate.dialect.PostgreSQLDialect
-    query.fail_on_pagination_over_collection_fetch: 'true'
+  jpa:
+    properties.hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      query.fail_on_pagination_over_collection_fetch: 'true'
     hibernate:
       naming.implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
       ddl-auto: create-drop

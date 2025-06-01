@@ -17,8 +17,8 @@ import org.springframework.context.annotation.Configuration;
 @EnableJpaAuditing
 @EnableTransactionManagement
 @ComponentScan(basePackages = "com.greencity.backend")
-@EntityScan("com.greencity.backend.model.entity")
-@EnableJpaRepositories("com.greencity.backend.model.repository")
+@EntityScan(basePackages = "com.greencity.backend.model")
+@EnableJpaRepositories(basePackages = "com.greencity.backend.model.repository")
 @EnableFeignClients(basePackages = "com.greencity.backend.service.remote")
 public class AppConfig {
 }
