@@ -45,7 +45,7 @@ export class MapViewComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!this.wsSubscription) {
       this.wsSubscription = this.ws
-        .listenToRegion(50.083719, 19.996448)
+        .listenToRegion(19.996448, 50.083719)
         .subscribe((light) => {
           this.updateLightMarker(light);
         });
@@ -87,7 +87,6 @@ export class MapViewComponent implements OnInit, OnDestroy {
             this.lightMapBridgeService.setRadius(radius);
             this.lightMapBridgeService.setSelected(light.uuid);
             this.drawCircle(this.convertToArray(light.position), radius);
-            this.lightService.sendMotionDetected(light.uuid, '1').subscribe();
           }
           this.lampSelected.emit(light.uuid);
         });
