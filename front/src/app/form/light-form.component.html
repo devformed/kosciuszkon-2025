@@ -38,7 +38,10 @@
       </mat-form-field>
     </div>
     @for (entry of brightnessEntries; track $index) {
-    <app-brightness-entry [entry]="entry" />
+    <app-brightness-entry
+      [entry]="entry"
+      (remove)="removeBrightnessConfigEntry($index)"
+    />
     }
     <button mat-button (click)="addEntry()">Dodaj jasność</button>
   </mat-dialog-content>

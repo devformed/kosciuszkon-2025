@@ -134,7 +134,7 @@ export class LightFormComponent implements OnInit {
   }
 
   removeBrightnessConfigEntry(index: number) {
-    this.brightnessConfigArray.removeAt(index);
+    this.brightnessEntries.splice(index, 1);
   }
 
   save() {
