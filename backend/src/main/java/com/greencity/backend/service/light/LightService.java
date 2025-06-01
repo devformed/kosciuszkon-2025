@@ -43,6 +43,7 @@ public class LightService {
 		this.webSocket = webSocket;
 	}
 
+	@Transactional(readOnly = true)
 	public List<LightEntry> getNearest(GeoPosition position, Double radius) {
 		if (radius > searchRadiusMetersMax) {
 			throw new ValidationException("Search radius exceeds search radius of %f".formatted(searchRadiusMetersMax));

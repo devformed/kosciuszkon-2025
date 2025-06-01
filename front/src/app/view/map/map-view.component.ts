@@ -107,7 +107,7 @@ export class MapViewComponent implements OnInit, OnDestroy {
       this.lightService
         .getNearest({
           position: { lng: center.lng, lat: center.lat },
-          radius: 200,
+          radius: 500,
         })
         .subscribe((lights) => {
           this.mapEntry = lights;

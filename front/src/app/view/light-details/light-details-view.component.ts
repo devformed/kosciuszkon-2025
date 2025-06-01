@@ -3,6 +3,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -14,13 +15,17 @@ import {
   MatInputModule,
   MatLabel,
 } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { LngLatLike } from 'mapbox-gl';
+import {first, Subject} from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
+
 import { BrightnessComponent } from 'src/app/component/brightness/brightness.component';
 import { LightEntry } from 'src/app/models/light-entry';
 import { TimePeriodSetting } from 'src/app/models/time-period';
 import { LightMapBridgeService } from 'src/app/service/light-map-bridge.service';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { LightService } from 'src/app/service/light.service';
+import {HttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'app-light-details-view',
@@ -56,6 +61,16 @@ import { LightService } from 'src/app/service/light.service';
           (ngModelChange)="onRadiusChange($event)"
         />
       </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Skonfiguruj przez AI</mat-label>
+        <input
+          matInput
+          [(ngModel)]="aiConfigInput"
+          (ngModelChange)="onAiConfigChange($event)"
+        />
+      </mat-form-field>
+
       <p>Jasność:</p>
 
       @for (entry of brightnessEntries; track $index) {
@@ -80,7 +95,9 @@ import { LightService } from 'src/app/service/light.service';
   ],
   styleUrl: './light-details-view.component.scss',
 })
-export class LightDetailsViewComponent implements OnInit, OnChanges {
+export class LightDetailsViewComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input({ required: true }) light!: LightEntry;
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<LightEntry>();
@@ -91,19 +108,36 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
 
   heartbeatChecked = false;
 
-  constructor(
-    private lightMapBridgeService: LightMapBridgeService,
-    private lightService: LightService
-  ) {}
-
   brightnessEntries: TimePeriodSetting[] = [];
   position: string | null = null;
   note: string | null = null;
   disableAfterSeconds: number | null = null;
   proximityActivationRadius: number | null = null;
 
+  // New AI config handling
+  aiConfigInput = '';
+  private aiConfigSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private http: HttpClient,
+    private lightMapBridgeService: LightMapBridgeService,
+    private lightService: LightService
+  ) {}
+
   ngOnInit(): void {
     this.getLightData();
+
+    // Subscribe to AI-config input with 2s debounce
+    this.aiConfigSubject
+      .pipe(debounceTime(1500), takeUntil(this.destroy$))
+      .subscribe((value) => this.updateTimePreferences(value));
+  }
+
+  updateTimePreferences(aiPrompt: string) {
+    this.http.post<TimePeriodSetting[]>(`http://localhost:8080/lights/gen-brightness-config`, aiPrompt)
+      .pipe(first())
+      .subscribe((response) => this.brightnessEntries = response || []);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -111,6 +145,11 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
       this.heartbeatChecked = false;
       this.getLightData();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onHeartbeatCheckboxChange(event: any) {
@@ -123,14 +162,14 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
   simulateMotion() {
     this.lightService
       .sendMotionDetected(this.light.uuid, '1')
-      .subscribe((response) => {
-        console.log(this.light.uuid);
+      .subscribe(() => {
+        console.log('Motion simulated for', this.light.uuid);
       });
   }
 
   getLightData() {
     this.position = this.getPosition(this.light.position);
-    this.brightnessEntries = this.light.brightnessConfig;
+    this.brightnessEntries = [...this.light.brightnessConfig];
     this.note = this.light.note || null;
     this.disableAfterSeconds = this.light.disableAfterSeconds || null;
     this.proximityActivationRadius =
@@ -139,6 +178,11 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
 
   onRadiusChange(value: number) {
     this.lightMapBridgeService.setRadius(value);
+  }
+
+  // Called on every ngModelChange of the AI field
+  onAiConfigChange(value: string) {
+    this.aiConfigSubject.next(value);
   }
 
   onClose() {
@@ -159,31 +203,17 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
   }
 
   saveChanges(): void {
-    const updatedBrightness = new Array<TimePeriodSetting>();
-    this.brightnessEntries.forEach((entry) => {
-      updatedBrightness.push({
-        from: entry.from,
-        to: entry.to,
-        brightness: entry.brightness,
-      });
-    });
+    const updatedBrightness = this.brightnessEntries.map((e) => ({
+      from: e.from,
+      to: e.to,
+      brightness: e.brightness,
+    }));
     this.light.brightnessConfig = updatedBrightness;
     this.light.disableAfterSeconds = this.disableAfterSeconds;
     this.light.note = this.note;
-    this.light.proximityActivationRadius = this.proximityActivationRadius;
+    this.light.proximityActivationRadius =
+      this.proximityActivationRadius;
     this.save.emit(this.light);
-  }
-
-  getBrightnessConfig(brightnessConfig: TimePeriodSetting) {
-    return `${brightnessConfig.from} - ${brightnessConfig.to}: ${
-      brightnessConfig.brightness * 100
-    }%`;
-  }
-
-  onBrightnessConfigInput(event: Event, entry: TimePeriodSetting) {
-    const input = event.target as HTMLInputElement;
-    const value = Number(input.value);
-    entry.brightness = value / 100;
   }
 
   getPosition(pos: LngLatLike): string {
