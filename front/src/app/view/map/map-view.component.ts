@@ -10,8 +10,10 @@ import {
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from 'src/environment/environment';
 import { LightEntry } from 'src/app/models/light-entry';
+import { Pedestrian } from 'src/app/models/pedestrian';
 import * as turf from '@turf/turf';
 import { LightMapBridgeService } from 'src/app/service/light-map-bridge.service';
+import { LightService } from 'src/app/service/light.service';
 
 @Component({
   standalone: true,
@@ -22,12 +24,17 @@ import { LightMapBridgeService } from 'src/app/service/light-map-bridge.service'
 export class MapViewComponent implements OnInit {
   @Output() lampSelected = new EventEmitter<string>();
   map!: mapboxgl.Map;
+  pedestrians: Pedestrian[] = mockPedestrians;
   @Input({ required: true }) mapEntry: LightEntry[] = [];
 
-  constructor(private lightMapBridgeService: LightMapBridgeService) {}
+  constructor(
+    private lightMapBridgeService: LightMapBridgeService,
+    private lightService: LightService
+  ) {}
 
   ngOnInit(): void {
     this.initMap();
+    // this.startPedestrianSimulation(this.pedestrians, this.mapEntry);
   }
 
   initMap() {
@@ -53,7 +60,7 @@ export class MapViewComponent implements OnInit {
             const radius = light.proximityActivationRadius ?? 30;
             this.lightMapBridgeService.setRadius(radius);
             this.lightMapBridgeService.setSelected(light.uuid);
-            this.drawCircle(this.convertToArray(light.position), 30);
+            this.drawCircle(this.convertToArray(light.position), radius);
           }
           this.lampSelected.emit(light.uuid);
         });
@@ -84,6 +91,35 @@ export class MapViewComponent implements OnInit {
         }
       });
     });
+  }
+
+  startPedestrianSimulation(pedestrians: Pedestrian[], lights: LightEntry[]) {
+    setInterval(() => {
+      pedestrians.forEach((pedestrian) => {
+        pedestrian.stepIndex =
+          (pedestrian.stepIndex + 1) % pedestrian.path.length;
+        pedestrian.position = pedestrian.path[pedestrian.stepIndex];
+
+        lights.forEach((light) => {
+          const lightPos = this.convertToArray(light.position);
+          const distance = turf.distance(lightPos, pedestrian.position, {
+            units: 'meters',
+          });
+
+          if (distance <= (light.proximityActivationRadius ?? 50)) {
+            this.lightService
+              .sendMotionDetected(light.uuid, pedestrian.id)
+              .subscribe({
+                next: () =>
+                  console.log(
+                    `🚶 Motion detected at ${light.uuid} by ${pedestrian.id}`
+                  ),
+                error: (err) => console.error(err),
+              });
+          }
+        });
+      });
+    }, 2000);
   }
 
   removeCircle() {
@@ -176,37 +212,41 @@ export class MapViewComponent implements OnInit {
   }
 }
 
-export const sampleLampData: LightEntry[] = [
+export const mockPedestrians: Pedestrian[] = [
   {
-    uuid: '123e4567-e89b-12d3-a456-426655440000',
-    note: 'note',
-    brightness: 0.9,
-    disableAfterSeconds: 1,
-    proximityActivationRadius: 1,
-    address: 'ul. Kwiatowa 5, Kraków',
-    brightnessConfig: [
-      { from: '06:00', to: '18:00', brightness: 0.9 },
-      { from: '18:00', to: '23:59', brightness: 0.4 },
+    id: 'ped-1',
+    position: [19.9405, 50.0505],
+    path: [
+      [19.9405, 50.0505],
+      [19.941, 50.0508],
+      [19.9415, 50.051],
+      [19.942, 50.0512],
+      [19.9425, 50.0515],
     ],
-    position: {
-      lng: 19.935,
-      lat: 50.0647,
-    },
+    stepIndex: 0,
   },
   {
-    uuid: '987f6543-e21c-45a6-b789-123456780000',
-    note: 'note',
-    brightness: 0.5,
-    disableAfterSeconds: 1,
-    proximityActivationRadius: 1,
-    address: 'ul. Słoneczna 10, Kraków',
-    brightnessConfig: [
-      { from: '00:00', to: '06:00', brightness: 0.1 },
-      { from: '18:00', to: '23:59', brightness: 1.0 },
+    id: 'ped-2',
+    position: [19.939, 50.049],
+    path: [
+      [19.939, 50.049],
+      [19.9395, 50.0495],
+      [19.94, 50.05],
+      [19.9405, 50.0505],
+      [19.941, 50.051],
     ],
-    position: {
-      lng: 19.9402,
-      lat: 50.0678,
-    },
+    stepIndex: 0,
+  },
+  {
+    id: 'ped-3',
+    position: [19.938, 50.048],
+    path: [
+      [19.938, 50.048],
+      [19.9385, 50.0485],
+      [19.939, 50.049],
+      [19.9395, 50.0495],
+      [19.94, 50.05],
+    ],
+    stepIndex: 0,
   },
 ];
