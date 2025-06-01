@@ -21,8 +21,9 @@ public class LightWebSocketImpl implements LightWebSocket {
 		this.messaging = messaging;
 	}
 
+	// todo replace -1 with actual region hash
 	public void sendUpdate(LightEntry entry) {
-		messaging.convertAndSend("/client/region/%s/light".formatted(toRegionHash(entry)), entry);
+		messaging.convertAndSend("/client/region/-1/light".formatted(toRegionHash(entry)), entry);
 	}
 
 	/*

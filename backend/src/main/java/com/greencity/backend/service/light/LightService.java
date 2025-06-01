@@ -34,7 +34,7 @@ public class LightService {
 	private final LightWebSocket webSocket;
 
 	@Autowired
-	public LightService(@Value("${com.greencity.light.heartbeat.heartbeat-tolerate-max-seconds:5}") int heartbeatSecondsMax,
+	public LightService(@Value("${com.greencity.light.heartbeat.heartbeat-tolerate-max-seconds:12}") int heartbeatSecondsMax,
 						@Value("${com.greencity.light.heartbeat.search-radius-meters-max:9999}") double searchRadiusMetersMax,
 						LightRepository repository, LightWebSocket webSocket) {
 		this.heartbeatSecondsMax = heartbeatSecondsMax;
@@ -117,13 +117,16 @@ public class LightService {
 	private void updateBrightness(LightEntity entity) {
 		// no heartbeat - probably corrupt sensor - enable
 		if (entity.getHeartbeatAt() == null || Instant.now().isAfter(entity.getHeartbeatAt().plusSeconds(heartbeatSecondsMax))) {
+			System.out.println(1);
 			enableBrightness(entity);
 			return;
 		}
 		if (entity.getDisableAt() != null && Instant.now().isBefore(entity.getDisableAt())) {
+			System.out.println(2);
 			enableBrightness(entity);
 			return;
 		}
+		System.out.println(3);
 		entity.setBrightness(0.);
 	}
 
