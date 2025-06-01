@@ -72,25 +72,7 @@ export class MapViewComponent implements OnInit, OnDestroy {
 
     this.map.on('load', () => {
       this.map.resize();
-      this.mapEntry.forEach((light) => {
-        const el = this.createLightMarkerElement(light.brightness);
-
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat(light.position)
-          .addTo(this.map);
-
-        this.lightMarkers.set(light.uuid, marker);
-
-        marker.getElement().addEventListener('click', () => {
-          if (light.proximityActivationRadius) {
-            const radius = light.proximityActivationRadius ?? 30;
-            this.lightMapBridgeService.setRadius(radius);
-            this.lightMapBridgeService.setSelected(light.uuid);
-            this.drawCircle(this.convertToArray(light.position), radius);
-          }
-          this.lampSelected.emit(light.uuid);
-        });
-      });
+      this.writeMarkers();
 
       this.lightMapBridgeService.selectedUuid$.subscribe((uuid) => {
         if (!uuid) {
@@ -125,11 +107,34 @@ export class MapViewComponent implements OnInit, OnDestroy {
       this.lightService
         .getNearest({
           position: { lng: center.lng, lat: center.lat },
-          radius: 9000,
+          radius: 200,
         })
         .subscribe((lights) => {
           this.mapEntry = lights;
+          this.writeMarkers();
         });
+    });
+  }
+
+  writeMarkers() {
+    this.mapEntry.forEach((light) => {
+      const el = this.createLightMarkerElement(light.brightness);
+
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat(light.position)
+        .addTo(this.map);
+
+      this.lightMarkers.set(light.uuid, marker);
+
+      marker.getElement().addEventListener('click', () => {
+        if (light.proximityActivationRadius) {
+          const radius = light.proximityActivationRadius ?? 30;
+          this.lightMapBridgeService.setRadius(radius);
+          this.lightMapBridgeService.setSelected(light.uuid);
+          this.drawCircle(this.convertToArray(light.position), radius);
+        }
+        this.lampSelected.emit(light.uuid);
+      });
     });
   }
 

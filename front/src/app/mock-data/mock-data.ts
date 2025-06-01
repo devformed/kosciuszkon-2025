@@ -31,7 +31,7 @@ function generateInterpolatedPath(
     }
   });
 
-  result.push(points[points.length - 1]); // add final point
+  result.push(points[points.length - 1]);
   return result;
 }
 

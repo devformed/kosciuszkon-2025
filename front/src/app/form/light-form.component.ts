@@ -103,7 +103,6 @@ export class LightFormComponent implements OnInit {
   }
 
   private updateLocationDetails(mapboxResponse: any) {
-    // im sorry but i dont really care rn
     const fullAddress: string =
       mapboxResponse.features?.[0]?.properties?.full_address;
     const lon: number =
