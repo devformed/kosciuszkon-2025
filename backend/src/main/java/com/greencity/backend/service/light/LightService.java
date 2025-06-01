@@ -124,20 +124,20 @@ public class LightService {
 		webSocket.sendUpdate(LightMapper.INSTANCE.toEntry(entity));
 	}
 
-	// true if changed
 	private boolean updateBrightness(LightEntity entity) {
-		// no heartbeat - probably corrupt sensor - enable
-		if (
-				(entity.getDisableAt() != null && Instant.now().isBefore(entity.getDisableAt()))
-				|| (entity.getHeartbeatAt() == null || Instant.now().isAfter(entity.getHeartbeatAt().plusSeconds(heartbeatSecondsMax)))
-		) {
-			double prev = entity.getBrightness();
+		Instant now = Instant.now();
+		boolean isDisableActive = entity.getDisableAt() != null && now.isBefore(entity.getDisableAt());
+		boolean isHeartbeatMissingOrStale = entity.getHeartbeatAt() == null
+				|| now.isAfter(entity.getHeartbeatAt().plusSeconds(heartbeatSecondsMax));
+
+		double previous = entity.getBrightness();
+		if (isDisableActive || isHeartbeatMissingOrStale) {
 			entity.setBrightness(calcBrightness(entity));
-			return prev != entity.getBrightness();
+		} else {
+			// active heartbeat and no disable: turn off
+			entity.setBrightness(0.);
 		}
-		boolean changed = entity.getBrightness() != 0.;
-		entity.setBrightness(0.);
-		return changed;
+		return previous != entity.getBrightness();
 	}
 
 	private double calcBrightness(LightEntity entity) {
