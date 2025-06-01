@@ -101,7 +101,7 @@ public class LightService {
 										Specs.has(LightEntity_.brightness, 0.)
 								),
 								Specs.and(
-										Specs.gt(LightEntity_.disableAt, Instant.now()),
+										Specs.lt(LightEntity_.disableAt, Instant.now()),
 										Specs.not(Specs.has(LightEntity_.brightness, 0.))
 								)
 						)
