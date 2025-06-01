@@ -23,7 +23,7 @@ export class WebsocketService extends RxStomp {
   }
 
   listenToRegion(lat: number, lng: number): Observable<LightEntry> {
-    const hash = geohash.encode(lat, lng, 3);
+    const hash = geohash.encode(lat, lng, 2);
     const destination = `/client/region/${hash}/light`;
     return this.watch(destination)
       .pipe(

@@ -16,7 +16,7 @@ public class LightWebSocketImpl implements LightWebSocket {
 	private final int hashPrecision;
 	private final SimpMessagingTemplate messaging;
 
-	public LightWebSocketImpl(@Value("${com.greencity.web-socket.light.hash-precision:3}") int hashPrecision, SimpMessagingTemplate messaging) {
+	public LightWebSocketImpl(@Value("${com.greencity.web-socket.light.hash-precision:2}") int hashPrecision, SimpMessagingTemplate messaging) {
 		this.hashPrecision = hashPrecision;
 		this.messaging = messaging;
 	}

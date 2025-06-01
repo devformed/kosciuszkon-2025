@@ -63,7 +63,7 @@ import {HttpClient} from '@angular/common/http';
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Skonfiguruj przez AI</mat-label>
+        <mat-label>✨Skonfiguruj przez AI</mat-label>
         <input
           matInput
           [(ngModel)]="aiConfigInput"
