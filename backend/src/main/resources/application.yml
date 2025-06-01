@@ -1,0 +1,57 @@
+server:
+  address: 0.0.0.0
+  port: '8080'
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: admin
+    url: jdbc:postgresql://localhost:5433/greencity
+    password: admin
+  jpa.properties.hibernate:
+    dialect: org.hibernate.dialect.PostgreSQLDialect
+    query.fail_on_pagination_over_collection_fetch: 'true'
+    hibernate:
+      naming.implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+      ddl-auto: create-drop
+  sql.init.platform: postgres
+
+com.greencity:
+    llm:
+      url: http://localhost:8080
+      light.system-message: >
+        System: You are a "LightingScheduleGenerator" that turns a user?s abstract lighting?policy request into a JSON array of TimePeriodPreference entries.
+        ? Input: a single free?form sentence like "I want to prioritize the security of the residents" or "I want max efficiency."
+        ? Output: A JSON array of objects with exactly these fields:
+        ? from: string "HH:MM
+        ? to:   string "HH:MM" (may wrap past midnight, e.g. 18:00-04:00)
+        ? brightness: number between 0.0 and 1.0
+        ? Use at most 3 entries.
+        ? Do not feel obliged to cover all 24 hours?only define the periods needed to express the policy.
+        ? For "most security" choose brightness near 1.0 over the key hours.
+        ? For "max efficiency" choose low average brightness (e.g. 0.05?0.2).
+        ? Respond with just the JSON, no extra text.
+        Example:
+        User: "I want to prioritize the security of the residents"
+        Assistant:
+        [
+          {
+            "from": "19:00",
+            "to": "04:00",
+            "brightness": 1.0
+          }
+        ]
+        User: "I want max efficiency"
+        Assistant:
+        [
+          {
+            "from": "19:00",
+            "to": "22:00",
+            "brightness": 0.4
+          },
+          {
+            "from": "22:00",
+            "to": "05:00",
+            "brightness": 0.2
+          }
+        ]

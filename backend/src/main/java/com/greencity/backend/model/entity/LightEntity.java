@@ -1,7 +1,7 @@
 package com.greencity.backend.model.entity;
 
 import com.greencity.backend.model.dto.GeoPosition;
-import com.greencity.backend.model.dto.TimePeriodSetting;
+import com.greencity.backend.model.dto.TimePeriodPreference;
 import com.greencity.backend.util.Identifiable;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
@@ -27,7 +27,6 @@ import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -64,7 +63,7 @@ public class LightEntity implements Identifiable<UUID> {
 	// assumes the server received localtime already converted to UTC
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(nullable = false)
-	private List<TimePeriodSetting> brightnessConfig;
+	private List<TimePeriodPreference> brightnessConfig;
 
 	@Column(nullable = false)
 	private Double brightness;

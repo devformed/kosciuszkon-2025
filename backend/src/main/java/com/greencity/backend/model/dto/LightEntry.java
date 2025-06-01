@@ -11,6 +11,8 @@ public record LightEntry(
 		String note,
 		String address,
 		GeoPosition position,
-		List<TimePeriodSetting> brightnessConfig
+		Integer disableAfterSeconds,
+		Double proximityActivationRadius,
+		List<TimePeriodPreference> brightnessConfig
 ) {
 }

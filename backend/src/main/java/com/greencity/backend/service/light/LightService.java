@@ -3,7 +3,7 @@ package com.greencity.backend.service.light;
 import com.greencity.backend.model.dto.GeoPosition;
 import com.greencity.backend.model.dto.LightDto;
 import com.greencity.backend.model.dto.LightEntry;
-import com.greencity.backend.model.dto.TimePeriodSetting;
+import com.greencity.backend.model.dto.TimePeriodPreference;
 import com.greencity.backend.model.entity.LightEntity;
 import com.greencity.backend.model.entity.LightEntity_;
 import com.greencity.backend.model.repository.LightRepository;
@@ -145,7 +145,7 @@ public class LightService {
 				.ifPresent(period -> entity.setBrightness(period.brightness()));
 	}
 
-	private boolean isBetween(LocalTime time, TimePeriodSetting period) {
+	private boolean isBetween(LocalTime time, TimePeriodPreference period) {
 		LocalTime from = toLocalTime(period.from());
 		LocalTime to = toLocalTime(period.to());
 

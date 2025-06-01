@@ -22,6 +22,6 @@ public record LightDto(
 		@NotNull
 		Double proximityActivationRadius,
 		@NotNull @NotEmpty
-		List<TimePeriodSetting> brightnessConfig
+		List<TimePeriodPreference> brightnessConfig
 ) {
 }

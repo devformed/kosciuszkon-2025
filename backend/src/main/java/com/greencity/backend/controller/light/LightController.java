@@ -3,6 +3,8 @@ package com.greencity.backend.controller.light;
 import com.greencity.backend.model.dto.GeoPositionRadiusDto;
 import com.greencity.backend.model.dto.LightDto;
 import com.greencity.backend.model.dto.LightEntry;
+import com.greencity.backend.model.dto.TimePeriodPreference;
+import com.greencity.backend.service.light.LightChatService;
 import com.greencity.backend.service.light.LightService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -27,10 +29,16 @@ import java.util.UUID;
 public class LightController {
 
 	private final LightService service;
+	private final LightChatService chatService;
 
 	@PostMapping(path = "/nearest")
 	public List<LightEntry> getNearest(@RequestBody @Validated GeoPositionRadiusDto geo) {
 		return service.getNearest(geo.position(), geo.radius());
+	}
+
+	@PostMapping("/gen-brightness-config")
+	public List<TimePeriodPreference> generateBrightnessConfig(@RequestBody String prompt) {
+		return chatService.promptToConfiguration(prompt);
 	}
 
 	@PostMapping
