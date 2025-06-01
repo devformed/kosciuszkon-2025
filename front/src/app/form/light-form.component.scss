@@ -1,9 +1,9 @@
 .form-section {
-  border: 1px solid #e0e0e0;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  background-color: #f9f9f9;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  padding: var(--spacing);
+  margin-bottom: var(--spacing);
+  border-radius: var(--border-radius);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.8rem;

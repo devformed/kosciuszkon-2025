@@ -1,4 +1,4 @@
-.close-button {
+ .close-button {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
@@ -6,76 +6,69 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #888;
-
-  &:hover {
-    color: #333;
-  }
+  color: var(--color-text-secondary);
+}
+.close-button:hover {
+  color: var(--color-text-primary);
 }
 
-.lamp-panel {
-  position: absolute;
-  right: 0;
-  width: 300px;
-  background: white;
-  padding: 1rem;
-}
 
-.lamp-details-panel {
+ .lamp-details-panel {
   position: absolute;
   right: 0;
   top: 0;
   width: 360px;
   max-width: 100%;
   height: 100%;
-  background-color: #fff;
-  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  background-color: var(--color-background);
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.05);
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+  padding: var(--spacing);
   z-index: 100;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
-  font-family: "Segoe UI", Roboto, sans-serif;
+  gap: var(--spacing);
 }
 
-h2 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  word-break: break-word;
+ h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: calc(var(--spacing)/2);
+  color: var(--color-text-primary);
 }
 
-p {
-  font-size: 0.95rem;
-  color: #555;
+ p {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
 }
 
-input[type="range"] {
+ input[type="range"] {
   width: 100%;
-  accent-color: #007bff;
+  accent-color: var(--color-accent);
 }
 
-button:hover {
+ button:hover {
   opacity: 0.9;
 }
 
-button:active {
-  transform: scale(0.98);
+ button:active {
+  transform: scale(0.97);
 }
 
-button.add,
-button.save {
-  background-color: #007bff;
-  color: #fff;
+ button.add,
+ button.save {
+  background-color: var(--color-accent);
+  color: white;
   font-weight: 500;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing);
   width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-hr {
+ hr {
   border: none;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--color-border);
   margin: 0.5rem 0;
 }

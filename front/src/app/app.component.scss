@@ -17,10 +17,11 @@ app-map-view {
   right: 0;
   width: 300px;
   height: 100%;
-  background: white;
-  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.2);
+  background-color: var(--color-background);
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.05);
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
   z-index: 10;
-  padding: 1rem;
+  padding: var(--spacing);
   overflow-y: auto;
 }
 
@@ -32,17 +33,25 @@ app-map-view {
 
 button {
   font: inherit;
-  padding: 0.4rem 0.8rem;
+  padding: calc(var(--spacing)/2) var(--spacing);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
+  background-color: var(--color-accent);
+  color: white;
   cursor: pointer;
-  transition: background-color 0.2s;
-  display: flex;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
+button:hover {
+  background-color: var(--color-accent-hover);
+}
+button:active {
+  transform: scale(0.97);
+}
 
 button svg {
-  height: 1rem;
   width: 1rem;
+  height: 1rem;
 }
