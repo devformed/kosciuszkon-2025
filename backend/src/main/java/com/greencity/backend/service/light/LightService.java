@@ -9,6 +9,7 @@ import com.greencity.backend.model.entity.LightEntity_;
 import com.greencity.backend.model.repository.LightRepository;
 import com.greencity.backend.model.repository.Specs;
 import jakarta.validation.ValidationException;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.UUID;
 /**
  * @author Anton Gorokh
  */
+@Log
 @Service
 @Transactional
 public class LightService {
@@ -83,9 +85,7 @@ public class LightService {
 		entity.setDisableAt(now.plusSeconds(entity.getDisableAfterSeconds()));
 
 		repository.findNearest(entity.getLongitude(), entity.getLatitude(), entity.getProximityActivationRadius())
-				.stream()
-				.map(this::updateBrightness)
-				.forEach(this::sendWebSocketUpdate);
+				.forEach(this::updateBrightnessAndSend);
 	}
 
 	public void checkActivity() {
@@ -106,30 +106,30 @@ public class LightService {
 								)
 						)
 				)
-				.stream()
-				.map(this::updateBrightness)
-				.forEach(this::sendWebSocketUpdate);
+				.forEach(this::updateBrightnessAndSend);
 	}
 
 	private void sendWebSocketUpdate(LightEntity entity) {
 		webSocket.sendUpdate(LightMapper.INSTANCE.toEntry(entity));
 	}
 
-	private LightEntity updateBrightness(LightEntity entity) {
+	private void updateBrightnessAndSend(LightEntity entity) {
 		// if no heartbeat or motion info - probably corrupt sensor - enable
 		if (entity.getHeartbeatAt() == null || entity.getMotionAt() == null) {
-			enableBrightness(entity);
-		}
-		// if heartbeat is too old - probably corrupt sensor - enable
-		if (Instant.now().isAfter(entity.getHeartbeatAt().plusSeconds(heartbeatSecondsMax))) {
+			log.info(entity.getUuid() + " 1");
 			enableBrightness(entity);
 		}
 		// if motionAt is too old - disable
-		if (entity.getDisableAt() != null && Instant.now().isAfter(entity.getDisableAt())) {
+		else if (entity.getDisableAt() != null && Instant.now().isAfter(entity.getDisableAt())) {
+			log.info(entity.getUuid() + " 2");
 			entity.setBrightness(0.);
 		}
+		// if heartbeat is too old - probably corrupt sensor - enable
+		else if (Instant.now().isAfter(entity.getHeartbeatAt().plusSeconds(heartbeatSecondsMax))) {
+			log.info(entity.getUuid() + " 3");
+			enableBrightness(entity);
+		}
 		webSocket.sendUpdate(LightMapper.INSTANCE.toEntry(entity));
-		return entity;
 	}
 
 	private void enableBrightness(LightEntity entity) {
@@ -142,7 +142,13 @@ public class LightService {
 		brightnessConfig.stream()
 				.filter(period -> isBetween(time, period))
 				.findAny()
-				.ifPresent(period -> entity.setBrightness(period.brightness()));
+				.ifPresentOrElse(period -> {
+							log.info(entity.getUuid() + " 4");
+							entity.setBrightness(period.brightness());
+						},
+						() -> {
+							log.info(entity.getUuid() + " 5");
+						});
 	}
 
 	private boolean isBetween(LocalTime time, TimePeriodPreference period) {
