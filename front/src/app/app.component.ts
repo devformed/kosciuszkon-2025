@@ -82,11 +82,11 @@ export class AppComponent implements OnInit {
     lights.forEach((light) => {
       if (this.heartbeatIntervals.has(light.uuid)) return;
 
-      const interval = light.disableAfterSeconds ?? 10;
-
       const intervalId = window.setInterval(() => {
-        this.lightService.sendHeartbeat(light.uuid).subscribe();
-      }, interval * 1000);
+        this.lightService.sendHeartbeat(light.uuid).subscribe(() => {
+          console.log(`Heartbeat sent for light: ${light.uuid}`);
+        });
+      }, 10000);
 
       this.heartbeatIntervals.set(light.uuid, intervalId);
     });
