@@ -52,7 +52,7 @@ export const pedestrians: Pedestrian[] = [
     path: interpolatedPath,
     direction: 1,
     lapCount: 0,
-    maxLaps: 3,
+    maxLaps: 1,
     active: true,
   },
 ];

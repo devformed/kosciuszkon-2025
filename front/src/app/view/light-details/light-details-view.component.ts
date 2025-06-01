@@ -19,6 +19,8 @@ import { BrightnessComponent } from 'src/app/component/brightness/brightness.com
 import { LightEntry } from 'src/app/models/light-entry';
 import { TimePeriodSetting } from 'src/app/models/time-period';
 import { LightMapBridgeService } from 'src/app/service/light-map-bridge.service';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { LightService } from 'src/app/service/light.service';
 
 @Component({
   selector: 'app-light-details-view',
@@ -27,6 +29,16 @@ import { LightMapBridgeService } from 'src/app/service/light-map-bridge.service'
     <div class="light-details-panel">
       <button class="close-button" (click)="onClose()">✖</button>
       <h2>{{ light.address }}</h2>
+      <mat-checkbox
+        [id]="light.uuid"
+        [(ngModel)]="heartbeatChecked"
+        (change)="onHeartbeatCheckboxChange($event)"
+      >
+        Zatrzymaj heartbeat
+      </mat-checkbox>
+      <button mat-button class="add" (click)="simulateMotion()">
+        Symuluj ruch
+      </button>
       <p style="margin-bottom: 1rem;">Pozycja:<br />{{ position }}</p>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Opis</mat-label>
@@ -64,6 +76,7 @@ import { LightMapBridgeService } from 'src/app/service/light-map-bridge.service'
     MatFormField,
     MatLabel,
     MatInputModule,
+    MatCheckboxModule,
   ],
   styleUrl: './light-details-view.component.scss',
 })
@@ -71,8 +84,17 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
   @Input({ required: true }) light!: LightEntry;
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<LightEntry>();
+  @Output() heartbeatToggle = new EventEmitter<{
+    uuid: string;
+    enabled: boolean;
+  }>();
 
-  constructor(private lightMapBridgeService: LightMapBridgeService) {}
+  heartbeatChecked = false;
+
+  constructor(
+    private lightMapBridgeService: LightMapBridgeService,
+    private lightService: LightService
+  ) {}
 
   brightnessEntries: TimePeriodSetting[] = [];
   position: string | null = null;
@@ -86,8 +108,24 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['light'] && this.light) {
+      this.heartbeatChecked = false;
       this.getLightData();
     }
+  }
+
+  onHeartbeatCheckboxChange(event: any) {
+    this.heartbeatToggle.emit({
+      uuid: this.light.uuid,
+      enabled: this.heartbeatChecked,
+    });
+  }
+
+  simulateMotion() {
+    this.lightService
+      .sendMotionDetected(this.light.uuid, '1')
+      .subscribe((response) => {
+        console.log(this.light.uuid);
+      });
   }
 
   getLightData() {

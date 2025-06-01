@@ -20,8 +20,14 @@ import {
 } from '@angular/forms';
 import { TimePeriodSetting } from '../models/time-period';
 import { BrightnessComponent } from '../component/brightness/brightness.component';
-import {debounceTime, distinctUntilChanged, first, Subject, takeUntil} from 'rxjs';
-import {SearchBoxService} from 'src/app/service/search-box.service';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  first,
+  Subject,
+  takeUntil,
+} from 'rxjs';
+import { SearchBoxService } from 'src/app/service/search-box.service';
 
 @Component({
   selector: 'app-light-dialog',
@@ -42,7 +48,6 @@ import {SearchBoxService} from 'src/app/service/search-box.service';
   styleUrl: './light-form.component.scss',
 })
 export class LightFormComponent implements OnInit {
-
   private destroy$ = new Subject<void>();
 
   lightForm!: FormGroup;
@@ -74,8 +79,7 @@ export class LightFormComponent implements OnInit {
   ngOnInit() {
     this.lightForm
       .get('note')!
-      .valueChanges
-      .pipe(
+      .valueChanges.pipe(
         debounceTime(1000),
         distinctUntilChanged(),
         takeUntil(this.destroy$)
@@ -100,9 +104,12 @@ export class LightFormComponent implements OnInit {
 
   private updateLocationDetails(mapboxResponse: any) {
     // im sorry but i dont really care rn
-    const fullAddress: string = mapboxResponse.features?.[0]?.properties?.full_address;
-    const lon: number = mapboxResponse.features?.[0]?.properties?.coordinates?.longitude;
-    const lat: number = mapboxResponse.features?.[0]?.properties?.coordinates?.latitude;
+    const fullAddress: string =
+      mapboxResponse.features?.[0]?.properties?.full_address;
+    const lon: number =
+      mapboxResponse.features?.[0]?.properties?.coordinates?.longitude;
+    const lat: number =
+      mapboxResponse.features?.[0]?.properties?.coordinates?.latitude;
 
     this.lightForm.get('address')?.setValue(fullAddress || '');
     this.lightForm.get('lng')?.setValue(lon || null);
@@ -134,11 +141,6 @@ export class LightFormComponent implements OnInit {
   save() {
     if (this.lightForm.valid) {
       const raw = this.lightForm.getRawValue();
-      console.log('🚀 ~ LightFormComponent ~ save ~ raw:', raw);
-      console.log(
-        '🚀 ~ LightFormComponent ~ save ~ brightnessMap:',
-        this.brightnessEntries
-      );
 
       const dto: LightDto = {
         address: raw.address,
@@ -149,7 +151,6 @@ export class LightFormComponent implements OnInit {
         note: raw.note,
       };
 
-      console.log(dto);
       this.dialogRef.close(dto);
     }
   }

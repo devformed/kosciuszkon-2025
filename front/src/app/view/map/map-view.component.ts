@@ -2,10 +2,9 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnChanges,
+  OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
 } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from 'src/environment/environment';
@@ -15,27 +14,49 @@ import * as turf from '@turf/turf';
 import { LightMapBridgeService } from 'src/app/service/light-map-bridge.service';
 import { LightService } from 'src/app/service/light.service';
 import { pedestrians } from 'src/app/mock-data/mock-data';
+import { Subscription } from 'rxjs';
+import { WebsocketService } from 'src/app/service/websocket.service';
 
 @Component({
   standalone: true,
   selector: 'app-map-view',
-  template: `<div id="map" class="map-container"></div>`,
+  template: `
+    <div>
+      <div id="map" class="map-container"></div>
+    </div>
+  `,
   styleUrls: ['./map-view.component.scss'],
 })
-export class MapViewComponent implements OnInit {
+export class MapViewComponent implements OnInit, OnDestroy {
   @Input({ required: true }) mapEntry: LightEntry[] = [];
   @Output() lampSelected = new EventEmitter<string>();
   map!: mapboxgl.Map;
   pedestrians: Pedestrian[] = pedestrians;
   pedestrianMarkers = new Map<string, mapboxgl.Marker>();
+  private lightMarkers = new Map<string, mapboxgl.Marker>();
+  private wsSubscription?: Subscription;
 
   constructor(
     private lightMapBridgeService: LightMapBridgeService,
-    private lightService: LightService
+    private lightService: LightService,
+    private ws: WebsocketService
   ) {}
 
   ngOnInit(): void {
-    this.initMap();
+    if (!this.wsSubscription) {
+      this.wsSubscription = this.ws
+        .listenToRegion(50.083719, 19.996448)
+        .subscribe((light) => {
+          this.updateLightMarker(light);
+        });
+      this.initMap();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.wsSubscription) {
+      this.wsSubscription.unsubscribe();
+    }
   }
 
   initMap() {
@@ -52,9 +73,13 @@ export class MapViewComponent implements OnInit {
     this.map.on('load', () => {
       this.map.resize();
       this.mapEntry.forEach((light) => {
-        const marker = new mapboxgl.Marker({ color: 'yellow' })
+        const el = this.createLightMarkerElement(light.brightness);
+
+        const marker = new mapboxgl.Marker(el)
           .setLngLat(light.position)
           .addTo(this.map);
+
+        this.lightMarkers.set(light.uuid, marker);
 
         marker.getElement().addEventListener('click', () => {
           if (light.proximityActivationRadius) {
@@ -62,6 +87,7 @@ export class MapViewComponent implements OnInit {
             this.lightMapBridgeService.setRadius(radius);
             this.lightMapBridgeService.setSelected(light.uuid);
             this.drawCircle(this.convertToArray(light.position), radius);
+            this.lightService.sendMotionDetected(light.uuid, '1').subscribe();
           }
           this.lampSelected.emit(light.uuid);
         });
@@ -92,8 +118,19 @@ export class MapViewComponent implements OnInit {
         }
       });
 
-      this.startPedestrianSimulation(this.mapEntry);
+      // this.startPedestrianSimulation(this.mapEntry);
     });
+  }
+
+  updateLightMarker(light: LightEntry) {
+    const marker = this.lightMarkers.get(light.uuid);
+    if (!marker) return;
+
+    const el = marker.getElement();
+    el.style.backgroundColor = this.brightnessToColor(light.brightness);
+
+    // Możesz też zaktualizować pozycję, jeśli się zmieniła:
+    marker.setLngLat(light.position);
   }
 
   startPedestrianSimulation(lights: LightEntry[]) {
@@ -120,11 +157,12 @@ export class MapViewComponent implements OnInit {
 
             const marker = this.pedestrianMarkers.get(pedestrian.id);
             if (marker) {
+              pedestrian.path = [[0, 0]];
+              pedestrian.position = [0, 0];
               marker.remove();
               this.pedestrianMarkers.delete(pedestrian.id);
             }
 
-            console.log(`🚶 ${pedestrian.id} zakończył trasę`);
             return;
           }
         }
@@ -143,17 +181,17 @@ export class MapViewComponent implements OnInit {
           if (distance <= (light.proximityActivationRadius ?? 50)) {
             this.lightService
               .sendMotionDetected(light.uuid, pedestrian.id)
-              .subscribe({
-                next: () =>
-                  console.log(
-                    `🚶 Motion detected at ${light.uuid} by ${pedestrian.id}`
-                  ),
-                error: (err) => console.error(err),
-              });
+              .subscribe();
           }
         });
       });
     }, 50);
+  }
+
+  brightnessToColor(brightness: number): string {
+    if (brightness > 0.66) return '#00ff00';
+    if (brightness > 0.1) return '#ffff00';
+    return '#ff0000';
   }
 
   createPedestrianMarker(pedestrian: Pedestrian): mapboxgl.Marker {
@@ -255,5 +293,15 @@ export class MapViewComponent implements OnInit {
     return `${String(date.getHours()).padStart(2, '0')}:${String(
       date.getMinutes()
     ).padStart(2, '0')}`;
+  }
+
+  private createLightMarkerElement(brightness: number): HTMLElement {
+    const el = document.createElement('div');
+    el.style.backgroundColor = this.brightnessToColor(brightness);
+    el.style.width = '20px';
+    el.style.height = '20px';
+    el.style.borderRadius = '50%';
+    el.style.border = '2px solid black';
+    return el;
   }
 }
