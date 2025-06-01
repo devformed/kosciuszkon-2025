@@ -51,9 +51,11 @@ public class LightEntity implements Identifiable<UUID> {
 	@Column(nullable = false)
 	private String address;
 
+	@JdbcTypeCode(SqlTypes.DECIMAL)
 	@Column(nullable = false)
 	private BigDecimal longitude;
 
+	@JdbcTypeCode(SqlTypes.DECIMAL)
 	@Column(nullable = false)
 	private BigDecimal latitude;
 
