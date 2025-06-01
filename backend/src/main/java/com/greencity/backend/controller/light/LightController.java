@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,6 +60,11 @@ public class LightController {
 	@PutMapping(path = "/{uuid}/heartbeat")
 	public void heartbeat(@PathVariable UUID uuid) {
 		service.heartbeat(uuid);
+	}
+
+	@PutMapping(path = "/batch/heartbeat")
+	public void heartbeat(@RequestBody Collection<UUID> uuid) {
+		uuid.forEach(service::heartbeat);
 	}
 
 	@PutMapping(path = "/{uuid}/motion-detected")

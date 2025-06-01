@@ -81,12 +81,15 @@ public class LightService {
 	public void motionDetected(UUID lightUuid, String pedestrianId) {
 		LightEntity entity = repository.getReferenceById(lightUuid);
 		Instant now = Instant.now();
-		entity.setMotionAt(now);
-		entity.setHeartbeatAt(now);
-		entity.setDisableAt(now.plusSeconds(entity.getDisableAfterSeconds()));
 
 		repository.findNearest(entity.getLongitude(), entity.getLatitude(), entity.getProximityActivationRadius())
-				.forEach(this::updateBrightnessAndSend);
+				.stream()
+				.map(e -> e.setMotionAt(now))
+				.map(e -> e.setHeartbeatAt(now))
+				.map(e -> e.setDisableAt(now.plusSeconds(entity.getDisableAfterSeconds())))
+				.filter(this::updateBrightness)
+				.map(repository::save)
+				.forEach(this::sendWebSocketUpdate);
 	}
 
 	public void checkActivity() {
@@ -107,45 +110,39 @@ public class LightService {
 								)
 						)
 				)
-				.forEach(this::updateBrightnessAndSend);
+				.stream()
+				.filter(this::updateBrightness)
+				.forEach(this::sendWebSocketUpdate);
 	}
 
 	private void sendWebSocketUpdate(LightEntity entity) {
 		webSocket.sendUpdate(LightMapper.INSTANCE.toEntry(entity));
 	}
 
-	private void updateBrightness(LightEntity entity) {
+	// true if changed
+	private boolean updateBrightness(LightEntity entity) {
 		// no heartbeat - probably corrupt sensor - enable
-		if (entity.getHeartbeatAt() == null || Instant.now().isAfter(entity.getHeartbeatAt().plusSeconds(heartbeatSecondsMax))) {
-			System.out.println(1);
-			enableBrightness(entity);
-			return;
+		if (
+				(entity.getDisableAt() != null && Instant.now().isBefore(entity.getDisableAt()))
+				|| (entity.getHeartbeatAt() == null || Instant.now().isAfter(entity.getHeartbeatAt().plusSeconds(heartbeatSecondsMax)))
+		) {
+			double prev = entity.getBrightness();
+			entity.setBrightness(calcBrightness(entity));
+			return prev != entity.getBrightness();
 		}
-		if (entity.getDisableAt() != null && Instant.now().isBefore(entity.getDisableAt())) {
-			System.out.println(2);
-			enableBrightness(entity);
-			return;
-		}
-		System.out.println(3);
+		boolean changed = entity.getBrightness() != 0.;
 		entity.setBrightness(0.);
+		return changed;
 	}
 
-	private void updateBrightnessAndSend(LightEntity entity) {
-		updateBrightness(entity);
-		webSocket.sendUpdate(LightMapper.INSTANCE.toEntry(entity));
-	}
-
-	private void enableBrightness(LightEntity entity) {
-		var brightnessConfig = entity.getBrightnessConfig();
-		if (brightnessConfig.isEmpty()) {
-			entity.setBrightness(1.);
-			return;
-		}
+	private double calcBrightness(LightEntity entity) {
 		LocalTime time = LocalTime.now();
-		brightnessConfig.stream()
+		return entity.getBrightnessConfig()
+				.stream()
 				.filter(period -> isBetween(time, period))
+				.map(TimePeriodPreference::brightness)
 				.findAny()
-				.ifPresent(period -> entity.setBrightness(period.brightness()));
+				.orElse(.0);
 	}
 
 	private boolean isBetween(LocalTime time, TimePeriodPreference period) {
