@@ -1,4 +1,4 @@
-§"""OpenAI client module for interacting with OpenAI ChatCompletion API."""
+"""OpenAI client module for interacting with OpenAI ChatCompletion API."""
 import os
 from dotenv import load_dotenv
 import openai
