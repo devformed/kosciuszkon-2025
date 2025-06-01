@@ -45,7 +45,7 @@ import { LightService } from 'src/app/service/light.service';
         <input matInput [(ngModel)]="note" />
       </mat-form-field>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Maksymalna nieaktywność [s]</mat-label>
+        <mat-label>Wyłącz po [s]</mat-label>
         <input matInput [(ngModel)]="disableAfterSeconds" />
       </mat-form-field>
       <mat-form-field appearance="outline" class="full-width">
@@ -188,13 +188,13 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
 
   getPosition(pos: LngLatLike): string {
     if (Array.isArray(pos)) {
-      return `Lng: ${pos[0]}, Lat: ${pos[1]}`;
+      return `Długość: ${pos[0]}, Szerokość: ${pos[1]}`;
     }
     if ('lng' in pos) {
-      return `Lng: ${pos.lng}, Lat: ${pos.lat}`;
+      return `Długość: ${pos.lng}, Szerokość: ${pos.lat}`;
     }
     if ('lon' in pos) {
-      return `Lng: ${pos.lon}, Lat: ${pos.lat}`;
+      return `Długość: ${pos.lon}, Szerokość: ${pos.lat}`;
     }
     return 'Unknown position';
   }

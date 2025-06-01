@@ -63,7 +63,7 @@ export class MapViewComponent implements OnInit, OnDestroy {
     this.map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/dark-v11',
-      center: [19.996448, 50.083719],
+      center: [19.9448923671489, 50.0646277319454],
       zoom: 15,
       accessToken: environment.mapbox.accessToken,
     });
@@ -119,6 +119,18 @@ export class MapViewComponent implements OnInit, OnDestroy {
 
       // this.startPedestrianSimulation(this.mapEntry);
     });
+
+    this.map.on('moveend', () => {
+      const center = this.map.getCenter();
+      this.lightService
+        .getNearest({
+          position: { lng: center.lng, lat: center.lat },
+          radius: 9000,
+        })
+        .subscribe((lights) => {
+          this.mapEntry = lights;
+        });
+    });
   }
 
   updateLightMarker(light: LightEntry) {
@@ -128,7 +140,6 @@ export class MapViewComponent implements OnInit, OnDestroy {
     const el = marker.getElement();
     el.style.backgroundColor = this.brightnessToColor(light.brightness);
 
-    // Możesz też zaktualizować pozycję, jeśli się zmieniła:
     marker.setLngLat(light.position);
   }
 
