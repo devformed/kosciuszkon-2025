@@ -27,6 +27,7 @@ export class AppComponent implements OnInit {
       .getNearest({ position: { lng: 19.94, lat: 50.05 }, radius: 9000 })
       .subscribe((lights) => {
         this.mapEntry = lights;
+        this.startHeartbeatSimulation(lights);
       });
   }
 
@@ -46,7 +47,31 @@ export class AppComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      this.lightService.create(result).subscribe();
+      this.lightService.create(result).subscribe(() => {
+        this.lightService
+          .getNearest({ position: { lng: 19.94, lat: 50.05 }, radius: 9000 })
+          .subscribe((lights) => {
+            this.mapEntry = lights;
+          });
+      });
+    });
+  }
+
+  startHeartbeatSimulation(lights: LightEntry[]) {
+    console.log(
+      '🚀 ~ AppComponent ~ startHeartbeatSimulation ~ lights:',
+      lights
+    );
+    lights.forEach((light) => {
+      const interval = light.disableAfterSeconds ?? 10;
+      console.log('🚀 ~ AppComponent ~ lights.forEach ~ interval:', interval);
+
+      setInterval(() => {
+        this.lightService.sendHeartbeat(light.uuid).subscribe({
+          next: () => console.log(`Heartbeat sent for ${light.uuid}`),
+          error: (err) => console.error('Error sending heartbeat', err),
+        });
+      }, interval * 1000);
     });
   }
 
