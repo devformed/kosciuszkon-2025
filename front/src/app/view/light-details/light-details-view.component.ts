@@ -18,13 +18,14 @@ import { LngLatLike } from 'mapbox-gl';
 import { BrightnessComponent } from 'src/app/component/brightness/brightness.component';
 import { LightEntry } from 'src/app/models/light-entry';
 import { TimePeriodSetting } from 'src/app/models/time-period';
+import { LightMapBridgeService } from 'src/app/service/light-map-bridge.service';
 
 @Component({
   selector: 'app-light-details-view',
   standalone: true,
   template: `
     <div class="light-details-panel">
-      <button class="close-button" (click)="close.emit()">✖</button>
+      <button class="close-button" (click)="onClose()">✖</button>
       <h2>{{ light.address }}</h2>
       <p style="margin-bottom: 1rem;">Pozycja:<br />{{ position }}</p>
       <mat-form-field appearance="outline" class="full-width">
@@ -37,7 +38,11 @@ import { TimePeriodSetting } from 'src/app/models/time-period';
       </mat-form-field>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Obręb</mat-label>
-        <input matInput [(ngModel)]="proximityActivationRadius" />
+        <input
+          matInput
+          [(ngModel)]="proximityActivationRadius"
+          (ngModelChange)="onRadiusChange($event)"
+        />
       </mat-form-field>
       <p>Jasność:</p>
 
@@ -67,6 +72,8 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<LightEntry>();
 
+  constructor(private lightMapBridgeService: LightMapBridgeService) {}
+
   brightnessEntries: TimePeriodSetting[] = [];
   position: string | null = null;
   note: string | null = null;
@@ -90,6 +97,15 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
     this.disableAfterSeconds = this.light.disableAfterSeconds || null;
     this.proximityActivationRadius =
       this.light.proximityActivationRadius || null;
+  }
+
+  onRadiusChange(value: number) {
+    this.lightMapBridgeService.setRadius(value);
+  }
+
+  onClose() {
+    this.lightMapBridgeService.clearSelection();
+    this.close.emit();
   }
 
   addEntry(): void {
@@ -117,10 +133,6 @@ export class LightDetailsViewComponent implements OnInit, OnChanges {
     this.light.disableAfterSeconds = this.disableAfterSeconds;
     this.light.note = this.note;
     this.light.proximityActivationRadius = this.proximityActivationRadius;
-    console.log(
-      '🚀 ~ LightDetailsViewComponent ~ saveChanges ~ this.light:',
-      this.light
-    );
     this.save.emit(this.light);
   }
 

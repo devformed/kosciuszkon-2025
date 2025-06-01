@@ -71,7 +71,6 @@ export class AppComponent implements OnInit {
         proximityActivationRadius: updated.proximityActivationRadius,
         note: updated.note,
       };
-      console.log('🚀 ~ AppComponent ~ onLightEdit ~ dto:', dto);
       this.lightService.update(updated.uuid, dto).subscribe();
     }
   }

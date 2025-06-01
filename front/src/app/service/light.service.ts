@@ -18,7 +18,6 @@ export class LightService {
   }
 
   create(dto: LightDto): Observable<LightEntry> {
-    console.log('🚀 ~ LightService ~ create ~ dto:', dto);
     return this.http.post<LightEntry>(this.baseUrl, dto, {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
@@ -31,7 +30,6 @@ export class LightService {
   }
 
   delete(uuid: string): Observable<void> {
-    // 🛠️ Uwaga: w backendzie masz `/lights/{uuid}=`, usuń `=` z @DeleteMapping w Javie
     return this.http.delete<void>(`${this.baseUrl}/${uuid}`);
   }
 
