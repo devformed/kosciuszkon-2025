@@ -1,5 +1,8 @@
 <div class="map-container-wrapper">
-  <app-map-view (lampSelected)="onLampSelected($event)"></app-map-view>
+  <app-map-view
+    [mapEntry]="mapEntry!"
+    (lampSelected)="onLampSelected($event)"
+  ></app-map-view>
   @if (selectedLight) {
   <app-light-details-view
     class="light-details-panel"
