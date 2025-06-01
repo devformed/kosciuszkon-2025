@@ -5,6 +5,7 @@ import { LightDetailsViewComponent } from './view/light-details/light-details-vi
 import { MatDialog } from '@angular/material/dialog';
 import { LightFormComponent } from './form/light-form.component';
 import { LightService } from './service/light.service';
+import { WebsocketService } from './service/websocket.service';
 
 @Component({
   selector: 'app-root',
@@ -20,15 +21,21 @@ export class AppComponent implements OnInit {
 
   mapEntry: LightEntry[] | null = null;
 
-  constructor(private dialog: MatDialog, private lightService: LightService) {}
+  constructor(
+    private dialog: MatDialog,
+    private lightService: LightService,
+    private ws: WebsocketService
+  ) {}
 
   ngOnInit(): void {
-    this.lightService
-      .getNearest({ position: { lng: 19.94, lat: 50.05 }, radius: 9000 })
-      .subscribe((lights) => {
-        this.mapEntry = lights;
-        this.startHeartbeatSimulation(lights);
-      });
+    this.ws.init().then(() => {
+      this.lightService
+        .getNearest({ position: { lng: 19.94, lat: 50.05 }, radius: 9000 })
+        .subscribe((lights) => {
+          this.mapEntry = lights;
+          this.startHeartbeatSimulation(lights);
+        });
+    });
   }
 
   onLampSelected(uuid: string) {
