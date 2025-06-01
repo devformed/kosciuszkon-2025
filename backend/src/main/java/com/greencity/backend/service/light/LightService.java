@@ -34,7 +34,7 @@ public class LightService {
 	private final LightWebSocket webSocket;
 
 	@Autowired
-	public LightService(@Value("${com.greencity.light.heartbeat.heartbeat-tolerate-max-seconds:12}") int heartbeatSecondsMax,
+	public LightService(@Value("${com.greencity.light.heartbeat.heartbeat-tolerate-max-seconds:15}") int heartbeatSecondsMax,
 						@Value("${com.greencity.light.heartbeat.search-radius-meters-max:9999}") double searchRadiusMetersMax,
 						LightRepository repository, LightWebSocket webSocket) {
 		this.heartbeatSecondsMax = heartbeatSecondsMax;
@@ -82,7 +82,11 @@ public class LightService {
 	public void motionDetected(UUID lightUuid, String pedestrianId) {
 		LightEntity entity = repository.getReferenceById(lightUuid);
 		Instant now = Instant.now();
-
+		if (calcBrightness(entity) == 0.) {
+			entity.setMotionAt(now);
+			entity.setHeartbeatAt(now);
+			return;
+		}
 		repository.findNearest(entity.getLongitude(), entity.getLatitude(), entity.getProximityActivationRadius())
 				.stream()
 				.map(e -> e.setMotionAt(now))

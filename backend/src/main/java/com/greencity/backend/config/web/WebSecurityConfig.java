@@ -21,8 +21,7 @@ public class WebSecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		return http.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				/* for the sake of hackathon, replace with oauth2 resource server later
-				web sockets should validate auth in connect cmd */
+				// if we had time we'd definitely go with keycloak oauth2
 				.authorizeHttpRequests(httpRequests -> httpRequests
 						.requestMatchers("/ws/**").permitAll()
 						.anyRequest().permitAll()
