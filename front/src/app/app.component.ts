@@ -37,7 +37,10 @@ export class AppComponent implements OnInit {
         })
         .subscribe((lights) => {
           this.mapEntry = lights;
-          this.startHeartbeatSimulation(lights);
+          this.startHeartbeatSimulation();
+          this.mapEntry?.forEach((light) => {
+            this.heartbeatIntervals.set(light.uuid, 10);
+          });
         });
     });
   }
@@ -49,9 +52,7 @@ export class AppComponent implements OnInit {
 
   onHeartbeatToggled(event: { uuid: string; enabled: boolean }) {
     if (!event.enabled) {
-      this.startHeartbeatSimulation([
-        this.mapEntry?.find((l) => l.uuid === event.uuid)!,
-      ]);
+      this.startHeartbeatSimulation();
     } else {
       this.stopHeartbeat(event.uuid);
     }
@@ -78,18 +79,12 @@ export class AppComponent implements OnInit {
     });
   }
 
-  startHeartbeatSimulation(lights: LightEntry[]) {
-    lights.forEach((light) => {
-      if (this.heartbeatIntervals.has(light.uuid)) return;
-
-      const intervalId = window.setInterval(() => {
-        this.lightService.sendHeartbeat(light.uuid).subscribe(() => {
-          console.log(`Heartbeat sent for light: ${light.uuid}`);
-        });
-      }, 10000);
-
-      this.heartbeatIntervals.set(light.uuid, intervalId);
-    });
+  startHeartbeatSimulation() {
+    setInterval(() => {
+      this.lightService
+        .sendAllHeartbeats(Array.from(this.heartbeatIntervals.keys()))
+        .subscribe();
+    }, 10000);
   }
 
   stopHeartbeat(uuid: string) {

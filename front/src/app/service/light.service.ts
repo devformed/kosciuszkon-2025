@@ -39,6 +39,12 @@ export class LightService {
     });
   }
 
+  sendAllHeartbeats(uuids: string[]): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/batch/heartbeat`, uuids, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   sendMotionDetected(uuid: string, pedestrianId: string): Observable<void> {
     return this.http.put<void>(
       `${this.baseUrl}/${uuid}/motion-detected`,
