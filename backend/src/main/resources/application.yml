@@ -8,13 +8,17 @@ spring:
     username: admin
     url: jdbc:postgresql://localhost:5433/greencity
     password: admin
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
   jpa:
     properties.hibernate:
       dialect: org.hibernate.dialect.PostgreSQLDialect
       query.fail_on_pagination_over_collection_fetch: 'true'
+#      show_sql: 'true'
     hibernate:
       naming.implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-      ddl-auto: create-drop
+      ddl-auto: validate
   sql.init.platform: postgres
 
 com.greencity:
