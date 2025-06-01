@@ -20,6 +20,8 @@ import {
 } from '@angular/forms';
 import { TimePeriodSetting } from '../models/time-period';
 import { BrightnessComponent } from '../component/brightness/brightness.component';
+import {debounceTime, distinctUntilChanged, first, Subject, takeUntil} from 'rxjs';
+import {SearchBoxService} from 'src/app/service/search-box.service';
 
 @Component({
   selector: 'app-light-dialog',
@@ -40,11 +42,15 @@ import { BrightnessComponent } from '../component/brightness/brightness.componen
   styleUrl: './light-form.component.scss',
 })
 export class LightFormComponent implements OnInit {
+
+  private destroy$ = new Subject<void>();
+
   lightForm!: FormGroup;
   brightnessEntries: TimePeriodSetting[] = [];
 
   constructor(
     private fb: FormBuilder,
+    private searchService: SearchBoxService,
     private dialogRef: MatDialogRef<LightFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Partial<LightDto>
   ) {
@@ -66,11 +72,41 @@ export class LightFormComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.lightForm
+      .get('note')!
+      .valueChanges
+      .pipe(
+        debounceTime(1000),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((value: string) => {
+        this.onNoteStable(value);
+      });
+
     this.addEntry();
   }
 
   get brightnessConfigArray(): FormArray {
     return this.lightForm.get('brightnessConfig') as FormArray;
+  }
+
+  private onNoteStable(note: string) {
+    this.searchService
+      .searchPlace(note)
+      .pipe(first())
+      .subscribe((response) => this.updateLocationDetails(response));
+  }
+
+  private updateLocationDetails(mapboxResponse: any) {
+    // im sorry but i dont really care rn
+    const fullAddress: string = mapboxResponse.features?.[0]?.properties?.full_address;
+    const lon: number = mapboxResponse.features?.[0]?.properties?.coordinates?.longitude;
+    const lat: number = mapboxResponse.features?.[0]?.properties?.coordinates?.latitude;
+
+    this.lightForm.get('address')?.setValue(fullAddress || '');
+    this.lightForm.get('lng')?.setValue(lon || null);
+    this.lightForm.get('lat')?.setValue(lat || null);
   }
 
   createBrightnessConfigGroup(
