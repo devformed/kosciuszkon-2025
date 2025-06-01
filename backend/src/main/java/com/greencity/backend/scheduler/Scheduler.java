@@ -14,7 +14,7 @@ public class Scheduler {
 
 	private final LightService lightService;
 
-	@Scheduled(cron = "${com.greencity.scheduler.light.heartbeat.check-cron:0/5 * * * * ?}")
+	@Scheduled(cron = "${com.greencity.scheduler.light.heartbeat.check-cron:* * * * * ?}")
 	public void lightsActivityCheck() {
 		lightService.checkActivity();
 	}
